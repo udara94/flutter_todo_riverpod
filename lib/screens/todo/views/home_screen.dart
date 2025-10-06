@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -277,8 +278,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         margin: AppDimensions.marginBottomM,
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.surfaceLight.withAlpha(1),
+              AppColors.surfaceLight.withAlpha(30),
+            ],
+            stops: const [0.0, 1.0],
+          ),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withOpacity(0.15), width: 0.5),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.1),
@@ -446,82 +456,106 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+      isScrollControlled: true,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.grey300,
-                borderRadius: BorderRadius.circular(2),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLight.withOpacity(0.3),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
               ),
             ),
-            // Todo title
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                todo.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Action buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  // Edit button
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButton(
-                      text: S.current.edit,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        AppRouter.pushToEditTodo(context, todo.id);
-                      },
-                      variant: AppButtonVariant.primary,
-                      size: AppButtonSize.large,
-                      icon: Icons.edit,
-                    ),
+                // Todo title
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
                   ),
-                  const SizedBox(height: 12),
-                  // Delete button
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButton(
-                      text: S.current.delete,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        _showDeleteDialog(todo, userId);
-                      },
-                      variant: AppButtonVariant.danger,
-                      size: AppButtonSize.large,
-                      icon: Icons.delete,
+                  child: Text(
+                    todo.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+                // Action buttons
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      // Edit button
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppButton(
+                          text: S.current.edit,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            AppRouter.pushToEditTodo(context, todo.id);
+                          },
+                          variant: AppButtonVariant.primary,
+                          size: AppButtonSize.large,
+                          icon: Icons.edit,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Delete button
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppButton(
+                          text: S.current.delete,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _showDeleteDialog(todo, userId);
+                          },
+                          variant: AppButtonVariant.danger,
+                          size: AppButtonSize.large,
+                          icon: Icons.delete,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
