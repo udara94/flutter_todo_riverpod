@@ -52,127 +52,118 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(S.current.homeTitle),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          // Search toggle
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _isSearchExpanded = !_isSearchExpanded;
-                if (!_isSearchExpanded) {
-                  _searchController.clear();
-                  ref.read(todoControllerProvider.notifier).setSearchQuery('');
-                }
-              });
-            },
-            icon: Icon(_isSearchExpanded ? Icons.close : Icons.search),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppColors.primaryGradient,
+            ),
           ),
-          // More options menu
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'stats':
-                  AppRouter.pushToStats(context);
-                  break;
-                case 'theme':
-                  // Theme toggle is handled by the Switch widget itself
-                  break;
-                case 'test_todos':
-                  _addTestTodos();
-                  break;
-                case 'logout':
-                  _showLogoutDialog();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'stats',
-                child: Row(
-                  children: [
-                    const Icon(Icons.analytics),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Text(S.current.statsTitle),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'theme',
-                child: Row(
-                  children: [
-                    Icon(
-                      themeState.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Text(
-                      themeState.isDarkMode
-                          ? S.current.darkMode
-                          : S.current.lightMode,
-                    ),
-                    const Spacer(),
-                    Switch(
-                      value: themeState.isDarkMode,
-                      onChanged: (value) {
-                        ref
-                            .read(themeControllerProvider.notifier)
-                            .setDarkMode(value);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'test_todos',
-                child: Row(
-                  children: [
-                    const Icon(Icons.add_task),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Text('Add Test Todos'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    const Icon(Icons.logout),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Text(S.current.logout),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-        bottom: _isSearchExpanded
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: AppSearchField(
-                    controller: _searchController,
-                    hintText: S.current.searchHint,
-                    onChanged: (value) {
-                      ref
-                          .read(todoControllerProvider.notifier)
-                          .setSearchQuery(value);
-                    },
-                    onClear: () {
+          child: AppBar(
+            title: Text(S.current.homeTitle),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            actions: [
+              // Search toggle
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isSearchExpanded = !_isSearchExpanded;
+                    if (!_isSearchExpanded) {
                       _searchController.clear();
                       ref
                           .read(todoControllerProvider.notifier)
                           .setSearchQuery('');
-                    },
+                    }
+                  });
+                },
+                icon: Icon(_isSearchExpanded ? Icons.close : Icons.search),
+              ),
+              // More options menu
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  switch (value) {
+                    case 'stats':
+                      AppRouter.pushToStats(context);
+                      break;
+                    case 'theme':
+                      // Theme toggle is handled by the Switch widget itself
+                      break;
+                    case 'test_todos':
+                      _addTestTodos();
+                      break;
+                    case 'logout':
+                      _showLogoutDialog();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'stats',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.analytics),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Text(S.current.statsTitle),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            : null,
+                  PopupMenuItem(
+                    value: 'theme',
+                    child: Row(
+                      children: [
+                        Icon(
+                          themeState.isDarkMode
+                              ? Icons.dark_mode
+                              : Icons.light_mode,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Text(
+                          themeState.isDarkMode
+                              ? S.current.darkMode
+                              : S.current.lightMode,
+                        ),
+                        const Spacer(),
+                        Switch(
+                          value: themeState.isDarkMode,
+                          onChanged: (value) {
+                            ref
+                                .read(themeControllerProvider.notifier)
+                                .setDarkMode(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'test_todos',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.add_task),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Text('Add Test Todos'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.logout),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Text(S.current.logout),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -180,6 +171,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         child: Column(
           children: [
+            // Search Field (when expanded)
+            if (_isSearchExpanded)
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: AppSearchField(
+                  controller: _searchController,
+                  hintText: S.current.searchHint,
+                  onChanged: (value) {
+                    ref
+                        .read(todoControllerProvider.notifier)
+                        .setSearchQuery(value);
+                  },
+                  onClear: () {
+                    _searchController.clear();
+                    ref
+                        .read(todoControllerProvider.notifier)
+                        .setSearchQuery('');
+                  },
+                ),
+              ),
+
             // Filter Chips
             _buildFilterChips(),
 
