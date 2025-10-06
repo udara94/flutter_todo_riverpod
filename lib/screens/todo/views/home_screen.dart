@@ -6,6 +6,7 @@ import '../controllers/todo_controller.dart';
 import '../state/todo_state.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/enum/auth_state.dart';
+import '../../theme/controllers/theme_controller.dart';
 import '../../../utils/constants/app_colors.dart';
 import '../../../utils/constants/app_dimensions.dart';
 import '../../../generated/l10n.dart';
@@ -34,6 +35,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final todoState = ref.watch(todoControllerProvider);
+    final themeState = ref.watch(themeControllerProvider);
 
     // Redirect to login if not authenticated
     if (authState?.status != AuthStatus.authenticated) {
@@ -51,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text('Welcome, ${user.name}'),
+        title: Text(S.current.homeTitle),
         backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
         elevation: 0,
@@ -69,24 +71,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
             icon: Icon(_isSearchExpanded ? Icons.close : Icons.search),
           ),
-          // Stats screen
-          IconButton(
-            onPressed: () {
-              AppRouter.pushToStats(context);
+          // More options menu
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'stats':
+                  AppRouter.pushToStats(context);
+                  break;
+                case 'theme':
+                  // Theme toggle is handled by the Switch widget itself
+                  break;
+                case 'test_todos':
+                  _addTestTodos();
+                  break;
+                case 'logout':
+                  _showLogoutDialog();
+                  break;
+              }
             },
-            icon: const Icon(Icons.analytics),
-            tooltip: S.current.statsTitle,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'stats',
+                child: Row(
+                  children: [
+                    const Icon(Icons.analytics),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(S.current.statsTitle),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'theme',
+                child: Row(
+                  children: [
+                    Icon(
+                      themeState.isDarkMode
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(
+                      themeState.isDarkMode
+                          ? S.current.darkMode
+                          : S.current.lightMode,
+                    ),
+                    const Spacer(),
+                    Switch(
+                      value: themeState.isDarkMode,
+                      onChanged: (value) {
+                        ref
+                            .read(themeControllerProvider.notifier)
+                            .setDarkMode(value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'test_todos',
+                child: Row(
+                  children: [
+                    const Icon(Icons.add_task),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text('Add Test Todos'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    const Icon(Icons.logout),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Text(S.current.logout),
+                  ],
+                ),
+              ),
+            ],
           ),
-          // Demo screen - commented out since demo screen doesn't exist
-          // IconButton(
-          //   onPressed: () {
-          //     AppRouter.pushToDemo(context);
-          //   },
-          //   icon: const Icon(Icons.code),
-          //   tooltip: 'Riverpod Demo',
-          // ),
-          // Logout button
-          const LogoutButton(),
         ],
         bottom: _isSearchExpanded
             ? PreferredSize(
@@ -118,9 +180,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         child: Column(
           children: [
-            // Stats Cards
-            _buildStatsCards(todoState, user.id),
-
             // Filter Chips
             _buildFilterChips(),
 
@@ -182,97 +241,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           AppRouter.pushToAddTodo(context);
         },
         variant: AppButtonVariant.primary,
-      ),
-    );
-  }
-
-  Widget _buildStatsCards(TodoState todoState, String userId) {
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.all(16),
-      child: todoState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildStatCard(
-                  S.current.statTotal,
-                  todoState.todos.length,
-                  AppColors.info,
-                ),
-                _buildStatCard(
-                  S.current.statCompleted,
-                  todoState.todos
-                      .where((t) => t.status == TodoStatus.completed)
-                      .length,
-                  AppColors.todoCompleted,
-                ),
-                _buildStatCard(
-                  S.current.statPending,
-                  todoState.todos
-                      .where((t) => t.status == TodoStatus.pending)
-                      .length,
-                  AppColors.todoPending,
-                ),
-                _buildStatCard(
-                  S.current.statInProgress,
-                  todoState.todos
-                      .where((t) => t.status == TodoStatus.inProgress)
-                      .length,
-                  AppColors.todoInProgress,
-                ),
-                _buildStatCard(
-                  S.current.statOverdue,
-                  todoState.todos
-                      .where(
-                        (t) =>
-                            t.dueDate != null &&
-                            t.dueDate!.isBefore(DateTime.now()) &&
-                            t.status != TodoStatus.completed,
-                      )
-                      .length,
-                  AppColors.todoOverdue,
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildStatCard(String title, int count, Color color) {
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: AppDimensions.fontSizeXXXL,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: AppDimensions.fontSizeS,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ),
     );
   }
@@ -652,6 +620,262 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case SortOrder.priorityDesc:
         return 'Priority (High-Low)';
     }
+  }
+
+  Future<void> _addTestTodos() async {
+    final authState = ref.read(authControllerProvider);
+    if (authState?.user == null) return;
+
+    final userId = authState!.user!.id;
+    final todoController = ref.read(todoControllerProvider.notifier);
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Create test todos with different statuses and priorities
+      final testTodos = [
+        // High Priority - Pending
+        {
+          'title': 'Critical Bug Fix',
+          'description': 'Fix the authentication issue in the login screen',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 1)),
+          'tags': 'bug,urgent,frontend',
+        },
+        // High Priority - In Progress
+        {
+          'title': 'Database Migration',
+          'description': 'Migrate user data to new schema',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 2)),
+          'tags': 'database,migration,backend',
+        },
+        // High Priority - Completed
+        {
+          'title': 'API Documentation',
+          'description': 'Complete REST API documentation',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 1)),
+          'tags': 'documentation,api,completed',
+        },
+        // Medium Priority - Pending
+        {
+          'title': 'UI/UX Improvements',
+          'description': 'Enhance user interface based on feedback',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 3)),
+          'tags': 'ui,ux,improvement',
+        },
+        // Medium Priority - In Progress
+        {
+          'title': 'Performance Optimization',
+          'description': 'Optimize app performance and reduce load times',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 4)),
+          'tags': 'performance,optimization',
+        },
+        // Medium Priority - Completed
+        {
+          'title': 'Code Review',
+          'description': 'Review pull requests from team members',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 2)),
+          'tags': 'review,code,completed',
+        },
+        // Low Priority - Pending
+        {
+          'title': 'Update Dependencies',
+          'description': 'Update all project dependencies to latest versions',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 7)),
+          'tags': 'dependencies,maintenance',
+        },
+        // Low Priority - In Progress
+        {
+          'title': 'Write Unit Tests',
+          'description': 'Add comprehensive unit tests for new features',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 5)),
+          'tags': 'testing,unit-tests',
+        },
+        // Low Priority - Completed
+        {
+          'title': 'Update README',
+          'description': 'Update project README with latest information',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 3)),
+          'tags': 'documentation,readme,completed',
+        },
+        // Overdue - High Priority
+        {
+          'title': 'Security Audit',
+          'description': 'Conduct security audit of the application',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().subtract(const Duration(days: 2)),
+          'tags': 'security,audit,overdue',
+        },
+        // Overdue - Medium Priority
+        {
+          'title': 'Client Meeting Prep',
+          'description': 'Prepare materials for client presentation',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().subtract(const Duration(days: 1)),
+          'tags': 'meeting,client,overdue',
+        },
+        // Future Task
+        {
+          'title': 'Feature Planning',
+          'description': 'Plan new features for next sprint',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 14)),
+          'tags': 'planning,features,future',
+        },
+      ];
+
+      // Add each test todo with retry logic
+      int successCount = 0;
+      for (final todoData in testTodos) {
+        bool success = false;
+        int retryCount = 0;
+        const maxRetries = 3;
+
+        while (!success && retryCount < maxRetries) {
+          try {
+            // First add the todo (it will be created with pending status)
+            await todoController.addTodo(
+              title: todoData['title'] as String,
+              description: todoData['description'] as String,
+              priority: todoData['priority'] as TodoPriority,
+              dueDate: todoData['dueDate'] as DateTime?,
+              tags: (todoData['tags'] as String).split(','),
+              userId: userId,
+            );
+
+            // Then update the status if it's not pending
+            final targetStatus = todoData['status'] as TodoStatus;
+            if (targetStatus != TodoStatus.pending) {
+              // Get the current state and find the last added todo
+              final currentState = ref.read(todoControllerProvider);
+              final lastTodo = currentState.todos.last;
+              final updatedTodo = lastTodo.copyWith(status: targetStatus);
+              await todoController.updateTodo(updatedTodo);
+            }
+
+            success = true;
+            successCount++;
+          } catch (e) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              // If all retries failed, log the error but continue with other todos
+              print(
+                'Failed to create todo "${todoData['title']}" after $maxRetries retries: $e',
+              );
+            } else {
+              // Wait a bit before retrying
+              await Future.delayed(const Duration(milliseconds: 100));
+            }
+          }
+        }
+      }
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added $successCount out of ${testTodos.length} test todos successfully!',
+            ),
+            backgroundColor: successCount == testTodos.length
+                ? Colors.green
+                : Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding test todos: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(S.current.logout),
+        content: Text(S.current.logoutConfirm),
+        actions: [
+          AppButton(
+            text: S.current.cancel,
+            onPressed: () => Navigator.of(context).pop(),
+            variant: AppButtonVariant.text,
+            size: AppButtonSize.medium,
+          ),
+          AppButton(
+            text: S.current.logout,
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                await ref.read(authControllerProvider.notifier).logout();
+                if (context.mounted) {
+                  AppRouter.goToLogin(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${S.current.logout} ${S.current.success}'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${S.current.error} ${S.current.logout}: $e',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            variant: AppButtonVariant.danger,
+            size: AppButtonSize.medium,
+          ),
+        ],
+      ),
+    );
   }
 }
 

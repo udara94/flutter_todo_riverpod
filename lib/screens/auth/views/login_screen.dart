@@ -124,127 +124,103 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       S.current.splashSubtitle,
                       style: TextStyle(
                         fontSize: AppDimensions.fontSizeL,
-                        color: AppColors.withOpacity(
-                          AppColors.textLight,
-                          0.8,
-                        ),
+                        color: AppColors.withOpacity(AppColors.textLight, 0.8),
                         letterSpacing: 0.5,
                       ),
                     ),
-                const SizedBox(height: AppDimensions.spacingHuge),
+                    const SizedBox(height: AppDimensions.spacingHuge),
 
-                // Login Form
-                Card(
-                  elevation: 8,
-                  color: AppColors.surfaceLight.withOpacity(0.95),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-                  ),
-                  child: Padding(
-                    padding: AppDimensions.paddingAllXXL,
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            S.current.singIn,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                            textAlign: TextAlign.center,
+                    // Login Form
+                    Card(
+                      elevation: 8,
+                      color: AppColors.surfaceLight.withOpacity(0.95),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusL,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: AppDimensions.paddingAllXXL,
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                S.current.singIn,
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textDark,
+                                    ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Email Field
+                              AppEmailField(
+                                controller: _emailController,
+                                labelText: S.current.emailLabel,
+                                isRequired: true,
+                                requiredErrorMessage: 'Please enter your email',
+                              ),
+                              const SizedBox(height: AppDimensions.spacingL),
+
+                              // Password Field
+                              AppPasswordField(
+                                controller: _passwordController,
+                                labelText: S.current.passwordLabel,
+                                isRequired: true,
+                                requiredErrorMessage:
+                                    'Please enter your password',
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Login Button
+                              AppButton(
+                                text: S.current.loginButton,
+                                onPressed: _handleLogin,
+                                variant: AppButtonVariant.primary,
+                                size: AppButtonSize.large,
+                                isLoading: authState?.isLoading == true,
+                                isFullWidth: true,
+                              ),
+
+                              const SizedBox(height: AppDimensions.spacingL),
+
+                              // Demo Credentials Button
+                              AppButton(
+                                text: S.current.useDemoCredentials,
+                                onPressed: () {
+                                  _emailController.text = 'demo@example.com';
+                                  _passwordController.text = 'password123';
+                                },
+                                variant: AppButtonVariant.outline,
+                                size: AppButtonSize.medium,
+                                isFullWidth: true,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 24),
-
-                          // Email Field
-                          AppEmailField(
-                            controller: _emailController,
-                            labelText: S.current.emailLabel,
-                            isRequired: true,
-                            requiredErrorMessage: 'Please enter your email',
-                          ),
-                          const SizedBox(height: AppDimensions.spacingL),
-
-                          // Password Field
-                          AppPasswordField(
-                            controller: _passwordController,
-                            labelText: S.current.passwordLabel,
-                            isRequired: true,
-                            requiredErrorMessage: 'Please enter your password',
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              if (value.length < 6) {
-                                return 'Password must be at least 6 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Login Button
-                          AppButton(
-                            text: S.current.loginButton,
-                            onPressed: _handleLogin,
-                            variant: AppButtonVariant.primary,
-                            size: AppButtonSize.large,
-                            isLoading: authState?.isLoading == true,
-                            isFullWidth: true,
-                          ),
-
-                          const SizedBox(height: AppDimensions.spacingL),
-
-                          // Demo Credentials Button
-                          AppButton(
-                            text: S.current.useDemoCredentials,
-                            onPressed: () {
-                              _emailController.text = 'demo@example.com';
-                              _passwordController.text = 'password123';
-                            },
-                            variant: AppButtonVariant.outline,
-                            size: AppButtonSize.medium,
-                            isFullWidth: true,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-
-                // const SizedBox(height: 24),
-
-                // Dark Mode Toggle - Commented out as requested
-                // Card(
-                //   child: ListTile(
-                //     leading: Icon(
-                //       themeState.isDarkMode
-                //           ? Icons.dark_mode
-                //           : Icons.light_mode,
-                //     ),
-                //     title: Text(
-                //       themeState.isDarkMode
-                //           ? S.current.darkMode
-                //           : S.current.lightMode,
-                //     ),
-                //     trailing: Switch(
-                //       value: themeState.isDarkMode,
-                //       onChanged: (value) {
-                //         ref
-                //             .read(themeControllerProvider.notifier)
-                //             .setDarkMode(value);
-                //       },
-                //     ),
-                //   ),
-                // ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    )));
+    );
   }
 
   Future<void> _handleLogin() async {
