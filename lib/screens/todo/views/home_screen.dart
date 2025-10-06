@@ -272,207 +272,368 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         todo.dueDate!.isBefore(DateTime.now()) &&
         todo.status != TodoStatus.completed;
 
-    return Card(
-      margin: AppDimensions.marginBottomM,
-      color: AppColors.surfaceLight,
-      child: ListTile(
-        leading: Checkbox(
-          value: todo.status == TodoStatus.completed,
-          onChanged: (value) {
-            ref.read(todoControllerProvider.notifier).toggleTodoStatus(todo.id);
-          },
+    return GestureDetector(
+      onTap: () => _showTodoOptionsBottomSheet(todo, userId),
+      child: Container(
+        margin: AppDimensions.marginBottomM,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        title: Text(
-          todo.title,
-          style: TextStyle(
-            decoration: todo.status == TodoStatus.completed
-                ? TextDecoration.lineThrough
-                : null,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Text(
-              todo.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: AppDimensions.spacingXS),
-            Row(
-              children: [
-                _buildPriorityChip(todo.priority),
-                const SizedBox(width: AppDimensions.spacingS),
-                _buildStatusChip(todo.status),
-                if (isOverdue) ...[
-                  const SizedBox(width: AppDimensions.spacingS),
-                  _buildOverdueChip(),
-                ],
-              ],
-            ),
-            if (todo.tags != null && todo.tags!.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingXS),
-              Wrap(
-                spacing: 4,
-                children: todo.tags!
-                    .split(',')
-                    .map((tag) => tag.trim())
-                    .where((tag) => tag.isNotEmpty)
-                    .map(
-                      (tag) => Chip(
-                        label: Text(tag),
-                        backgroundColor: AppColors.grey200,
-                        labelStyle: const TextStyle(
-                          fontSize: AppDimensions.fontSizeXS,
-                          color: AppColors.textDark,
+            // Main content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                16,
+                80,
+                16,
+              ), // Extra right padding for priority chip
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title row with checkbox and title
+                  Row(
+                    children: [
+                      // Left side visual element for balance
+                      Container(
+                        width: 4,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: _getPriorityColor(
+                            todo.priority,
+                          ).withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                    )
-                    .toList(),
-              ),
-            ],
-            if (todo.dueDate != null) ...[
-              const SizedBox(height: AppDimensions.spacingXS),
-              Text(
-                '${S.current.dueDateLabel} ${DateFormat('MMM dd, yyyy').format(todo.dueDate!)}',
-                style: TextStyle(
-                  fontSize: AppDimensions.fontSizeS,
-                  color: isOverdue ? AppColors.todoOverdue : AppColors.grey600,
-                  fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ],
-          ],
-        ),
-        trailing: PopupMenuButton(
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit),
-                  SizedBox(width: 8),
-                  Text(S.current.edit),
+                      const SizedBox(width: 12),
+                      Checkbox(
+                        value: todo.status == TodoStatus.completed,
+                        onChanged: (value) {
+                          ref
+                              .read(todoControllerProvider.notifier)
+                              .toggleTodoStatus(todo.id);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          todo.title,
+                          style: TextStyle(
+                            decoration: todo.status == TodoStatus.completed
+                                ? TextDecoration.lineThrough
+                                : null,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Description
+                  Text(
+                    todo.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Bottom row with status and due date
+                  Row(
+                    children: [
+                      // Status with label
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Status',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          _buildStatusChip(todo.status),
+                        ],
+                      ),
+                      if (todo.dueDate != null) ...[
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Due Date',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isOverdue
+                                      ? AppColors.todoOverdue.withOpacity(0.1)
+                                      : AppColors.grey200,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isOverdue
+                                        ? AppColors.todoOverdue
+                                        : AppColors.grey300,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  DateFormat(
+                                    'MMM dd, yyyy',
+                                  ).format(todo.dueDate!),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isOverdue
+                                        ? AppColors.todoOverdue
+                                        : AppColors.grey600,
+                                    fontWeight: isOverdue
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text(S.current.delete, style: TextStyle(color: Colors.red)),
-                ],
-              ),
+            // Priority chip in top right corner
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _buildPriorityChipCorner(todo.priority),
             ),
           ],
-          onSelected: (value) {
-            if (value == 'edit') {
-              AppRouter.pushToEditTodo(context, todo.id);
-            } else if (value == 'delete') {
-              _showDeleteDialog(todo, userId);
-            }
-          },
         ),
-        onTap: () {
-          AppRouter.pushToEditTodo(context, todo.id);
-        },
       ),
     );
   }
 
-  Widget _buildPriorityChip(TodoPriority priority) {
+  void _showTodoOptionsBottomSheet(Todo todo, String userId) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.grey300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Todo title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Text(
+                todo.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Action buttons
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  // Edit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppButton(
+                      text: S.current.edit,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        AppRouter.pushToEditTodo(context, todo.id);
+                      },
+                      variant: AppButtonVariant.primary,
+                      size: AppButtonSize.large,
+                      icon: Icons.edit,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Delete button
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppButton(
+                      text: S.current.delete,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _showDeleteDialog(todo, userId);
+                      },
+                      variant: AppButtonVariant.danger,
+                      size: AppButtonSize.large,
+                      icon: Icons.delete,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getPriorityColor(TodoPriority priority) {
+    switch (priority) {
+      case TodoPriority.high:
+        return AppColors.priorityHigh;
+      case TodoPriority.medium:
+        return AppColors.priorityMedium;
+      case TodoPriority.low:
+        return AppColors.priorityLow;
+    }
+  }
+
+  Widget _buildPriorityChipCorner(TodoPriority priority) {
     Color color;
+    IconData icon;
     switch (priority) {
       case TodoPriority.high:
         color = AppColors.priorityHigh;
+        icon = Icons.keyboard_arrow_up;
         break;
       case TodoPriority.medium:
         color = AppColors.priorityMedium;
+        icon = Icons.remove;
         break;
       case TodoPriority.low:
         color = AppColors.priorityLow;
+        icon = Icons.keyboard_arrow_down;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXS,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.chipBorderRadius),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        priority.name.toUpperCase(),
-        style: TextStyle(
-          fontSize: AppDimensions.fontSizeXS,
-          fontWeight: FontWeight.bold,
-          color: color,
+        color: color,
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(12), // Match card's top right corner
+          bottomRight: Radius.circular(0), // Match card's bottom right corner
+          topLeft: Radius.circular(0), // Sharp corner
+          bottomLeft: Radius.circular(12), // Sharp corner
         ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            spreadRadius: 0,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            priority.name.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStatusChip(TodoStatus status) {
     Color color;
+    IconData icon;
     switch (status) {
       case TodoStatus.pending:
         color = Colors.grey;
+        icon = Icons.schedule;
         break;
       case TodoStatus.inProgress:
         color = Colors.blue;
+        icon = Icons.play_circle_outline;
         break;
       case TodoStatus.completed:
         color = Colors.green;
+        icon = Icons.check_circle_outline;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXS,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.chipBorderRadius),
-        border: Border.all(color: color),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color, width: 1.5),
       ),
-      child: Text(
-        status.name.toUpperCase(),
-        style: TextStyle(
-          fontSize: AppDimensions.fontSizeXS,
-          fontWeight: FontWeight.bold,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverdueChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingS,
-        vertical: AppDimensions.paddingXS,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.chipBorderRadius),
-        border: Border.all(color: Colors.red),
-      ),
-      child: const Text(
-        'OVERDUE',
-        style: TextStyle(
-          fontSize: AppDimensions.fontSizeXS,
-          fontWeight: FontWeight.bold,
-          color: Colors.red,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            status.name.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }
