@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/state/auth_state.dart';
 import '../../auth/enum/auth_state.dart';
-import '../../theme/controllers/theme_controller.dart';
-import '../../config/controllers/app_config_controller.dart';
 import '../../../utils/constants/app_colors.dart';
 import '../../../utils/constants/app_dimensions.dart';
 import '../../../generated/l10n.dart';
@@ -35,8 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     // Watch auth state for reactive UI updates
     final authState = ref.watch(authControllerProvider);
-    final themeState = ref.watch(themeControllerProvider);
-    final appConfigState = ref.watch(appConfigControllerProvider);
 
     // Listen to auth state changes for side effects (navigation, snackbars)
     ref.listen<AuthState?>(authControllerProvider, (previous, next) {
@@ -68,47 +64,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     return Scaffold(
-      backgroundColor: themeState.isDarkMode
-          ? AppColors.backgroundDark
-          : AppColors.backgroundLight,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: AppDimensions.paddingAllXXL,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // App Logo/Title
-                Icon(
-                  Icons.task_alt,
-                  size: AppDimensions.iconMassive,
-                  color: themeState.isDarkMode
-                      ? AppColors.textLight
-                      : AppColors.primary,
-                ),
-                const SizedBox(height: AppDimensions.spacingL),
-                Text(
-                  appConfigState.appName,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: themeState.isDarkMode
-                        ? AppColors.textLight
-                        : AppColors.textDark,
-                  ),
-                ),
-                Text(
-                  S.current.version(appConfigState.version),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: themeState.isDarkMode
-                        ? AppColors.grey400
-                        : AppColors.grey600,
-                  ),
-                ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: AppColors.splashGradient,
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.withOpacity(AppColors.textLight, 0.1),
+                Colors.transparent,
+                AppColors.withOpacity(AppColors.textLight, 0.05),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: AppDimensions.paddingAllXXL,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // App Logo/Title - Using splash screen design
+                    Container(
+                      width: AppDimensions.splashLogoSize,
+                      height: AppDimensions.splashLogoSize,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusXXL,
+                        ),
+                        boxShadow: AppDimensions.shadowHigh,
+                      ),
+                      child: const Icon(
+                        Icons.task_alt,
+                        size: AppDimensions.splashIconSize,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingHuge),
+                    Text(
+                      S.current.appName,
+                      style: const TextStyle(
+                        fontSize: AppDimensions.fontSizeHuge,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textLight,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Text(
+                      S.current.splashSubtitle,
+                      style: TextStyle(
+                        fontSize: AppDimensions.fontSizeL,
+                        color: AppColors.withOpacity(
+                          AppColors.textLight,
+                          0.8,
+                        ),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                 const SizedBox(height: AppDimensions.spacingHuge),
 
                 // Login Form
                 Card(
-                  elevation: themeState.isDarkMode ? 8 : 4,
+                  elevation: 8,
+                  color: AppColors.surfaceLight.withOpacity(0.95),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                  ),
                   child: Padding(
                     padding: AppDimensions.paddingAllXXL,
                     child: Form(
@@ -119,7 +150,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Text(
                             S.current.singIn,
                             style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
@@ -160,88 +194,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             isLoading: authState?.isLoading == true,
                             isFullWidth: true,
                           ),
+
+                          const SizedBox(height: AppDimensions.spacingL),
+
+                          // Demo Credentials Button
+                          AppButton(
+                            text: S.current.useDemoCredentials,
+                            onPressed: () {
+                              _emailController.text = 'demo@example.com';
+                              _passwordController.text = 'password123';
+                            },
+                            variant: AppButtonVariant.outline,
+                            size: AppButtonSize.medium,
+                            isFullWidth: true,
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                // const SizedBox(height: 24),
 
-                // Demo Credentials
-                Card(
-                  color: themeState.isDarkMode
-                      ? AppColors.grey800
-                      : AppColors.primary.withOpacity(0.1),
-                  child: Padding(
-                    padding: AppDimensions.paddingAllL,
-                    child: Column(
-                      children: [
-                        Text(
-                          S.current.demoCredentials,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: themeState.isDarkMode
-                                ? AppColors.textLight
-                                : AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingS),
-                        Text(
-                          S.current.demoCredentialsText,
-                          style: TextStyle(
-                            color: themeState.isDarkMode
-                                ? AppColors.grey300
-                                : AppColors.primary,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingS),
-                        AppButton(
-                          text: S.current.useDemoCredentials,
-                          onPressed: () {
-                            _emailController.text = 'demo@example.com';
-                            _passwordController.text = 'password123';
-                          },
-                          variant: AppButtonVariant.secondary,
-                          size: AppButtonSize.medium,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Dark Mode Toggle
-                Card(
-                  child: ListTile(
-                    leading: Icon(
-                      themeState.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
-                    ),
-                    title: Text(
-                      themeState.isDarkMode
-                          ? S.current.darkMode
-                          : S.current.lightMode,
-                    ),
-                    trailing: Switch(
-                      value: themeState.isDarkMode,
-                      onChanged: (value) {
-                        ref
-                            .read(themeControllerProvider.notifier)
-                            .setDarkMode(value);
-                      },
-                    ),
-                  ),
-                ),
+                // Dark Mode Toggle - Commented out as requested
+                // Card(
+                //   child: ListTile(
+                //     leading: Icon(
+                //       themeState.isDarkMode
+                //           ? Icons.dark_mode
+                //           : Icons.light_mode,
+                //     ),
+                //     title: Text(
+                //       themeState.isDarkMode
+                //           ? S.current.darkMode
+                //           : S.current.lightMode,
+                //     ),
+                //     trailing: Switch(
+                //       value: themeState.isDarkMode,
+                //       onChanged: (value) {
+                //         ref
+                //             .read(themeControllerProvider.notifier)
+                //             .setDarkMode(value);
+                //       },
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
         ),
       ),
-    );
+    )));
   }
 
   Future<void> _handleLogin() async {
