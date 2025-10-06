@@ -699,6 +699,56 @@ class S {
       args: [],
     );
   }
+
+  /// `Created (Oldest)`
+  String get sortCreatedOldest {
+    return Intl.message(
+      'Created (Oldest)',
+      name: 'sortCreatedOldest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Created (Newest)`
+  String get sortCreatedNewest {
+    return Intl.message(
+      'Created (Newest)',
+      name: 'sortCreatedNewest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title (A-Z)`
+  String get sortTitleAZ {
+    return Intl.message('Title (A-Z)', name: 'sortTitleAZ', desc: '', args: []);
+  }
+
+  /// `Title (Z-A)`
+  String get sortTitleZA {
+    return Intl.message('Title (Z-A)', name: 'sortTitleZA', desc: '', args: []);
+  }
+
+  /// `Priority (Low-High)`
+  String get sortPriorityLowHigh {
+    return Intl.message(
+      'Priority (Low-High)',
+      name: 'sortPriorityLowHigh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Priority (High-Low)`
+  String get sortPriorityHighLow {
+    return Intl.message(
+      'Priority (High-Low)',
+      name: 'sortPriorityHighLow',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

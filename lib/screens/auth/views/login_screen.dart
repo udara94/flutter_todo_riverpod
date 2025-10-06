@@ -7,6 +7,7 @@ import '../../../utils/constants/app_colors.dart';
 import '../../../utils/constants/app_dimensions.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/router/app_router.dart';
+import '../../../utils/snackbar_util.dart';
 import '../../../widgets/common/app_text_input_field.dart';
 import '../../../widgets/common/app_button.dart';
 
@@ -39,26 +40,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (next?.status == AuthStatus.authenticated) {
         // Navigate to home screen on successful login
         AppRouter.goToHome(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(S.current.welcomeBack(next?.user?.name ?? 'User')),
-            backgroundColor: Colors.green,
-          ),
+        SnackBarUtil.showSuccess(
+          context,
+          S.current.welcomeBack(next?.user?.name ?? 'User'),
         );
       } else if (next?.errorMessage != null) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next?.errorMessage ?? S.current.loginFailed),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: S.current.retry,
-              textColor: Colors.white,
-              onPressed: () {
-                ref.read(authControllerProvider.notifier).clearError();
-              },
-            ),
-          ),
+        SnackBarUtil.showWithAction(
+          context,
+          next?.errorMessage ?? S.current.loginFailed,
+          actionLabel: S.current.retry,
+          onActionPressed: () {
+            ref.read(authControllerProvider.notifier).clearError();
+          },
+          backgroundColor: Colors.red,
         );
       }
     });
@@ -271,12 +266,7 @@ class LogoutButton extends ConsumerWidget {
                 await ref.read(authControllerProvider.notifier).logout();
                 if (context.mounted) {
                   AppRouter.goToLogin(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Logged out successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  SnackBarUtil.showSuccess(context, 'Logged out successfully');
                 }
               }
             },

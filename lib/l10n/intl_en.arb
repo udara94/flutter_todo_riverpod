@@ -90,5 +90,11 @@
   "thisMonth": "This Month",
   "nextMonth": "Next Month",
   "singIn": "Sign In",
-  "taskDeleted": "Task deleted successfully"
+  "taskDeleted": "Task deleted successfully",
+  "sortCreatedOldest": "Created (Oldest)",
+  "sortCreatedNewest": "Created (Newest)",
+  "sortTitleAZ": "Title (A-Z)",
+  "sortTitleZA": "Title (Z-A)",
+  "sortPriorityLowHigh": "Priority (Low-High)",
+  "sortPriorityHighLow": "Priority (High-Low)"
 }

@@ -9,6 +9,7 @@ import '../../auth/enum/auth_state.dart';
 import '../../../utils/constants/app_dimensions.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/router/app_router.dart';
+import '../../../utils/snackbar_util.dart';
 import '../../../widgets/common/app_text_input_field.dart';
 import '../../../widgets/common/app_button.dart';
 
@@ -488,12 +489,7 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
             );
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Todo created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          SnackBarUtil.showSuccess(context, 'Todo created successfully!');
           context.pop();
         }
       } else {
@@ -513,23 +509,13 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
         await ref.read(todoControllerProvider.notifier).updateTodo(updatedTodo);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Todo updated successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          SnackBarUtil.showSuccess(context, 'Todo updated successfully!');
           context.pop();
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving todo: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtil.showError(context, 'Error saving todo: $e');
       }
     } finally {
       if (mounted) {

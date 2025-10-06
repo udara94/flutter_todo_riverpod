@@ -103,6 +103,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "searchHint": MessageLookupByLibrary.simpleMessage("Search tasks..."),
     "selectDueDate": MessageLookupByLibrary.simpleMessage("Select Due Date"),
     "singIn": MessageLookupByLibrary.simpleMessage("Sign In"),
+    "sortCreatedNewest": MessageLookupByLibrary.simpleMessage(
+      "Created (Newest)",
+    ),
+    "sortCreatedOldest": MessageLookupByLibrary.simpleMessage(
+      "Created (Oldest)",
+    ),
+    "sortPriorityHighLow": MessageLookupByLibrary.simpleMessage(
+      "Priority (High-Low)",
+    ),
+    "sortPriorityLowHigh": MessageLookupByLibrary.simpleMessage(
+      "Priority (Low-High)",
+    ),
+    "sortTitleAZ": MessageLookupByLibrary.simpleMessage("Title (A-Z)"),
+    "sortTitleZA": MessageLookupByLibrary.simpleMessage("Title (Z-A)"),
     "splashSubtitle": MessageLookupByLibrary.simpleMessage(
       "Stay organized, stay productive",
     ),

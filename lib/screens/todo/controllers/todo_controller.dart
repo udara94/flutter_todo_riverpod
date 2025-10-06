@@ -133,6 +133,177 @@ class TodoController extends _$TodoController {
     state = state.copyWith(errorMessage: null, lastErrorTime: null);
   }
 
+  Future<({int successCount, int totalCount, String? error})> addTestTodos(
+    String userId,
+  ) async {
+    try {
+      // Create test todos with different statuses and priorities
+      final testTodos = [
+        // High Priority - Pending
+        {
+          'title': 'Critical Bug Fix',
+          'description': 'Fix the authentication issue in the login screen',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 1)),
+          'tags': 'bug,urgent,frontend',
+        },
+        // High Priority - In Progress
+        {
+          'title': 'Database Migration',
+          'description': 'Migrate user data to new schema',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 2)),
+          'tags': 'database,migration,backend',
+        },
+        // High Priority - Completed
+        {
+          'title': 'API Documentation',
+          'description': 'Complete REST API documentation',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 1)),
+          'tags': 'documentation,api,completed',
+        },
+        // Medium Priority - Pending
+        {
+          'title': 'UI/UX Improvements',
+          'description': 'Enhance user interface based on feedback',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 3)),
+          'tags': 'ui,ux,improvement',
+        },
+        // Medium Priority - In Progress
+        {
+          'title': 'Performance Optimization',
+          'description': 'Optimize app performance and reduce load times',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 4)),
+          'tags': 'performance,optimization',
+        },
+        // Medium Priority - Completed
+        {
+          'title': 'Code Review',
+          'description': 'Review pull requests from team members',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 2)),
+          'tags': 'review,code,completed',
+        },
+        // Low Priority - Pending
+        {
+          'title': 'Update Dependencies',
+          'description': 'Update all project dependencies to latest versions',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 7)),
+          'tags': 'dependencies,maintenance',
+        },
+        // Low Priority - In Progress
+        {
+          'title': 'Write Unit Tests',
+          'description': 'Add comprehensive unit tests for new features',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().add(const Duration(days: 5)),
+          'tags': 'testing,unit-tests',
+        },
+        // Low Priority - Completed
+        {
+          'title': 'Update README',
+          'description': 'Update project README with latest information',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.completed,
+          'dueDate': DateTime.now().subtract(const Duration(days: 3)),
+          'tags': 'documentation,readme,completed',
+        },
+        // Overdue - High Priority
+        {
+          'title': 'Security Audit',
+          'description': 'Conduct security audit of the application',
+          'priority': TodoPriority.high,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().subtract(const Duration(days: 2)),
+          'tags': 'security,audit,overdue',
+        },
+        // Overdue - Medium Priority
+        {
+          'title': 'Client Meeting Prep',
+          'description': 'Prepare materials for client presentation',
+          'priority': TodoPriority.medium,
+          'status': TodoStatus.inProgress,
+          'dueDate': DateTime.now().subtract(const Duration(days: 1)),
+          'tags': 'meeting,client,overdue',
+        },
+        // Future Task
+        {
+          'title': 'Feature Planning',
+          'description': 'Plan new features for next sprint',
+          'priority': TodoPriority.low,
+          'status': TodoStatus.pending,
+          'dueDate': DateTime.now().add(const Duration(days: 14)),
+          'tags': 'planning,features,future',
+        },
+      ];
+
+      // Add each test todo with retry logic
+      int successCount = 0;
+      for (final todoData in testTodos) {
+        bool success = false;
+        int retryCount = 0;
+        const maxRetries = 3;
+
+        while (!success && retryCount < maxRetries) {
+          try {
+            // First add the todo (it will be created with pending status)
+            await addTodo(
+              title: todoData['title'] as String,
+              description: todoData['description'] as String,
+              priority: todoData['priority'] as TodoPriority,
+              dueDate: todoData['dueDate'] as DateTime?,
+              tags: (todoData['tags'] as String).split(','),
+              userId: userId,
+            );
+
+            // Then update the status if it's not pending
+            final targetStatus = todoData['status'] as TodoStatus;
+            if (targetStatus != TodoStatus.pending) {
+              // Get the current state and find the last added todo
+              final lastTodo = state.todos.last;
+              final updatedTodo = lastTodo.copyWith(status: targetStatus);
+              await updateTodo(updatedTodo);
+            }
+
+            success = true;
+            successCount++;
+          } catch (e) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              // If all retries failed, log the error but continue with other todos
+              print(
+                'Failed to create todo "${todoData['title']}" after $maxRetries retries: $e',
+              );
+            } else {
+              // Wait a bit before retrying
+              await Future.delayed(const Duration(milliseconds: 100));
+            }
+          }
+        }
+      }
+
+      return (
+        successCount: successCount,
+        totalCount: testTodos.length,
+        error: null,
+      );
+    } catch (e) {
+      return (successCount: 0, totalCount: 0, error: e.toString());
+    }
+  }
+
   List<Todo> get filteredTodos {
     var filteredTodos = List<Todo>.from(state.todos);
 
