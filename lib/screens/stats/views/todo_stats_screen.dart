@@ -1,113 +1,121 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/providers.dart';
-import '../../models/todo.dart';
+import '../../../entity/todo.dart';
+import '../../auth/enum/auth_state.dart';
+import '../controllers/stats_controller.dart';
+import '../state/stats_state.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../todo/controllers/todo_controller.dart';
+import '../../../utils/constants/app_dimensions.dart';
+import '../../../generated/l10n.dart';
 
 class TodoStatsScreen extends ConsumerWidget {
   const TodoStatsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
-    final darkMode = ref.watch(darkModeProvider);
+    final authState = ref.watch(authControllerProvider);
+    final statsState = ref.watch(statsControllerProvider);
+    final todoState = ref.watch(todoControllerProvider);
 
-    if (!authState.isAuthenticated) {
+    if (authState?.status != AuthStatus.authenticated) {
       return const Scaffold(
         body: Center(child: Text('Please login to view stats')),
       );
     }
 
-    final userId = authState.user!.id;
-    final todoStats = ref.watch(todoStatsProvider(userId));
-    final todos = ref.watch(todoListProvider(userId));
+    final userId = authState!.user!.id;
 
-    return Theme(
-      data: Theme.of(
-        context,
-      ).copyWith(brightness: darkMode ? Brightness.dark : Brightness.light),
-      child: Scaffold(
-        backgroundColor: darkMode ? Colors.grey[900] : Colors.grey[50],
-        appBar: AppBar(
-          title: const Text('Todo Statistics'),
-          backgroundColor: darkMode ? Colors.grey[800] : Colors.blue[600],
-          foregroundColor: Colors.white,
-        ),
-        body: todoStats.when(
-          data: (stats) => SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Overview Cards
-                _buildOverviewCards(stats, darkMode),
-
-                const SizedBox(height: 24),
-
-                // Priority Distribution
-                _buildPriorityChart(todos, darkMode),
-
-                const SizedBox(height: 24),
-
-                // Status Distribution
-                _buildStatusChart(todos, darkMode),
-
-                const SizedBox(height: 24),
-
-                // Recent Activity
-                _buildRecentActivity(todos, darkMode),
-
-                const SizedBox(height: 24),
-
-                // Performance Metrics
-                _buildPerformanceMetrics(todos, darkMode),
-              ],
-            ),
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
-                const SizedBox(height: 16),
-                Text(
-                  'Error loading statistics',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.invalidate(todoStatsProvider(userId));
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: Text(S.current.statsTitle),
+        backgroundColor: Colors.blue[600],
+        foregroundColor: Colors.white,
       ),
+      body: statsState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : statsState.errorMessage != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: AppDimensions.iconXXL,
+                    color: Colors.red[400],
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Text(
+                    'Error loading statistics',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Text(
+                    statsState.errorMessage!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  ElevatedButton(
+                    onPressed: () {
+                      ref
+                          .read(statsControllerProvider.notifier)
+                          .loadStats(userId);
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: AppDimensions.paddingAllL,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Overview Cards
+                  _buildOverviewCards(
+                    statsState.stats ?? TodoStats.fromTodos(todoState.todos),
+                  ),
+
+                  const SizedBox(height: AppDimensions.spacingXXL),
+
+                  // Priority Distribution
+                  _buildPriorityChart(todoState.todos),
+
+                  const SizedBox(height: AppDimensions.spacingXXL),
+
+                  // Status Distribution
+                  _buildStatusChart(todoState.todos),
+
+                  const SizedBox(height: AppDimensions.spacingXXL),
+
+                  // Recent Activity
+                  _buildRecentActivity(todoState.todos),
+
+                  const SizedBox(height: AppDimensions.spacingXXL),
+
+                  // Performance Metrics
+                  _buildPerformanceMetrics(todoState.todos),
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _buildOverviewCards(TodoStats stats, bool darkMode) {
+  Widget _buildOverviewCards(TodoStats stats) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Overview',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: AppDimensions.fontSizeXXL,
             fontWeight: FontWeight.bold,
-            color: darkMode ? Colors.white : Colors.black87,
+            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppDimensions.spacingL),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -121,28 +129,24 @@ class TodoStatsScreen extends ConsumerWidget {
               stats.total.toString(),
               Icons.list_alt,
               Colors.blue,
-              darkMode,
             ),
             _buildStatCard(
-              'Completed',
+              S.current.statCompleted,
               stats.completed.toString(),
               Icons.check_circle,
               Colors.green,
-              darkMode,
             ),
             _buildStatCard(
-              'In Progress',
+              S.current.statInProgress,
               stats.inProgress.toString(),
               Icons.play_circle,
               Colors.orange,
-              darkMode,
             ),
             _buildStatCard(
-              'Overdue',
+              S.current.statOverdue,
               stats.overdue.toString(),
               Icons.warning,
               Colors.red,
-              darkMode,
             ),
           ],
         ),
@@ -151,16 +155,15 @@ class TodoStatsScreen extends ConsumerWidget {
   }
 
   Widget _buildStatCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      bool darkMode,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
-      color: darkMode ? Colors.grey[800] : Colors.white,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppDimensions.paddingAllL,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -169,16 +172,16 @@ class TodoStatsScreen extends ConsumerWidget {
             Text(
               value,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: AppDimensions.fontSizeXXXL,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 12,
-                color: darkMode ? Colors.grey[300] : Colors.grey[600],
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeS,
+                color: Colors.grey,
               ),
               textAlign: TextAlign.center,
             ),
@@ -188,7 +191,7 @@ class TodoStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPriorityChart(List<Todo> todos, bool darkMode) {
+  Widget _buildPriorityChart(List<Todo> todos) {
     final priorityCounts = <TodoPriority, int>{};
     for (final priority in TodoPriority.values) {
       priorityCounts[priority] = todos
@@ -197,21 +200,21 @@ class TodoStatsScreen extends ConsumerWidget {
     }
 
     return Card(
-      color: darkMode ? Colors.grey[800] : Colors.white,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Priority Distribution',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: AppDimensions.fontSizeXL,
                 fontWeight: FontWeight.bold,
-                color: darkMode ? Colors.white : Colors.black87,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingL),
             ...priorityCounts.entries.map((entry) {
               final percentage = todos.isEmpty
                   ? 0.0
@@ -226,27 +229,21 @@ class TodoStatsScreen extends ConsumerWidget {
                       children: [
                         Text(
                           entry.key.name.toUpperCase(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: darkMode ? Colors.white : Colors.black87,
+                            color: Colors.black87,
                           ),
                         ),
                         Text(
                           '${entry.value} (${percentage.toStringAsFixed(1)}%)',
-                          style: TextStyle(
-                            color: darkMode
-                                ? Colors.grey[300]
-                                : Colors.grey[600],
-                          ),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     LinearProgressIndicator(
                       value: percentage / 100,
-                      backgroundColor: darkMode
-                          ? Colors.grey[700]
-                          : Colors.grey[200],
+                      backgroundColor: Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(
                         _getPriorityColor(entry.key),
                       ),
@@ -261,28 +258,28 @@ class TodoStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusChart(List<Todo> todos, bool darkMode) {
+  Widget _buildStatusChart(List<Todo> todos) {
     final statusCounts = <TodoStatus, int>{};
     for (final status in TodoStatus.values) {
       statusCounts[status] = todos.where((t) => t.status == status).length;
     }
 
     return Card(
-      color: darkMode ? Colors.grey[800] : Colors.white,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Status Distribution',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: AppDimensions.fontSizeXL,
                 fontWeight: FontWeight.bold,
-                color: darkMode ? Colors.white : Colors.black87,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingL),
             ...statusCounts.entries.map((entry) {
               final percentage = todos.isEmpty
                   ? 0.0
@@ -297,27 +294,21 @@ class TodoStatsScreen extends ConsumerWidget {
                       children: [
                         Text(
                           entry.key.name.toUpperCase(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: darkMode ? Colors.white : Colors.black87,
+                            color: Colors.black87,
                           ),
                         ),
                         Text(
                           '${entry.value} (${percentage.toStringAsFixed(1)}%)',
-                          style: TextStyle(
-                            color: darkMode
-                                ? Colors.grey[300]
-                                : Colors.grey[600],
-                          ),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     LinearProgressIndicator(
                       value: percentage / 100,
-                      backgroundColor: darkMode
-                          ? Colors.grey[700]
-                          : Colors.grey[200],
+                      backgroundColor: Colors.grey[200],
                       valueColor: AlwaysStoppedAnimation<Color>(
                         _getStatusColor(entry.key),
                       ),
@@ -332,67 +323,61 @@ class TodoStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentActivity(List<Todo> todos, bool darkMode) {
+  Widget _buildRecentActivity(List<Todo> todos) {
     final recentTodos = todos.take(5).toList();
 
     return Card(
-      color: darkMode ? Colors.grey[800] : Colors.white,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Recent Activity',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: AppDimensions.fontSizeXL,
                 fontWeight: FontWeight.bold,
-                color: darkMode ? Colors.white : Colors.black87,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingL),
             if (recentTodos.isEmpty)
-              Text(
+              const Text(
                 'No recent activity',
-                style: TextStyle(
-                  color: darkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
+                style: TextStyle(color: Colors.grey),
               )
             else
               ...recentTodos
                   .map(
                     (todo) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _getStatusIcon(todo.status),
-                        color: _getStatusColor(todo.status),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          todo.title,
-                          style: TextStyle(
-                            color: darkMode ? Colors.white : Colors.black87,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getStatusIcon(todo.status),
+                            color: _getStatusColor(todo.status),
+                            size: 16,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              todo.title,
+                              style: const TextStyle(color: Colors.black87),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            _formatDate(todo.createdAt),
+                            style: const TextStyle(
+                              fontSize: AppDimensions.fontSizeS,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        _formatDate(todo.createdAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: darkMode
-                              ? Colors.grey[400]
-                              : Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+                    ),
+                  )
                   .toList(),
           ],
         ),
@@ -400,7 +385,7 @@ class TodoStatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPerformanceMetrics(List<Todo> todos, bool darkMode) {
+  Widget _buildPerformanceMetrics(List<Todo> todos) {
     final completedTodos = todos
         .where((t) => t.status == TodoStatus.completed)
         .length;
@@ -411,10 +396,10 @@ class TodoStatsScreen extends ConsumerWidget {
     final overdueTodos = todos
         .where(
           (t) =>
-      t.dueDate != null &&
-          t.dueDate!.isBefore(DateTime.now()) &&
-          t.status != TodoStatus.completed,
-    )
+              t.dueDate != null &&
+              t.dueDate!.isBefore(DateTime.now()) &&
+              t.status != TodoStatus.completed,
+        )
         .length;
 
     final overdueRate = todos.isEmpty
@@ -422,21 +407,21 @@ class TodoStatsScreen extends ConsumerWidget {
         : (overdueTodos / todos.length) * 100;
 
     return Card(
-      color: darkMode ? Colors.grey[800] : Colors.white,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Performance Metrics',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: AppDimensions.fontSizeXL,
                 fontWeight: FontWeight.bold,
-                color: darkMode ? Colors.white : Colors.black87,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingL),
             Row(
               children: [
                 Expanded(
@@ -445,7 +430,6 @@ class TodoStatsScreen extends ConsumerWidget {
                     '${completionRate.toStringAsFixed(1)}%',
                     Icons.trending_up,
                     completionRate > 70 ? Colors.green : Colors.orange,
-                    darkMode,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -455,7 +439,6 @@ class TodoStatsScreen extends ConsumerWidget {
                     '${overdueRate.toStringAsFixed(1)}%',
                     Icons.trending_down,
                     overdueRate < 20 ? Colors.green : Colors.red,
-                    darkMode,
                   ),
                 ),
               ],
@@ -467,12 +450,11 @@ class TodoStatsScreen extends ConsumerWidget {
   }
 
   Widget _buildMetricItem(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      bool darkMode,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -487,16 +469,16 @@ class TodoStatsScreen extends ConsumerWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: AppDimensions.fontSizeXL,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 12,
-              color: darkMode ? Colors.grey[300] : Colors.grey[600],
+            style: const TextStyle(
+              fontSize: AppDimensions.fontSizeS,
+              color: Colors.grey,
             ),
             textAlign: TextAlign.center,
           ),

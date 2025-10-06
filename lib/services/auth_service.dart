@@ -3,20 +3,20 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import '../models/user.dart';
-import '../models/auth_state.dart';
+import '../entity/user.dart';
 
 class AuthService {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
+  static SharedPreferences? _prefs;
+  static final _uuid = const Uuid();
 
-  final SharedPreferences _prefs;
-  final _uuid = const Uuid();
-
-  AuthService(this._prefs);
+  static void initialize(SharedPreferences prefs) {
+    _prefs = prefs;
+  }
 
   // Mock authentication - simulates API calls
-  Future<User> login(String email, String password) async {
+  static Future<User> login(String email, String password) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
 
@@ -44,12 +44,12 @@ class AuthService {
           .split(' ')
           .map(
             (word) => word.isNotEmpty
-            ? word[0].toUpperCase() + word.substring(1)
-            : '',
-      )
+                ? word[0].toUpperCase() + word.substring(1)
+                : '',
+          )
           .join(' '),
       avatarUrl:
-      'https://ui-avatars.com/api/?name=${Uri.encodeComponent(email)}&background=random',
+          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(email)}&background=random',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
       lastLoginAt: DateTime.now(),
     );
@@ -61,16 +61,16 @@ class AuthService {
     return user;
   }
 
-  Future<void> logout() async {
-    await _prefs.remove(_tokenKey);
-    await _prefs.remove(_userKey);
+  static Future<void> logout() async {
+    await _prefs!.remove(_tokenKey);
+    await _prefs!.remove(_userKey);
   }
 
-  Future<User?> getCurrentUser() async {
-    final token = _prefs.getString(_tokenKey);
+  static Future<User?> getCurrentUser() async {
+    final token = _prefs!.getString(_tokenKey);
     if (token == null) return null;
 
-    final userJson = _prefs.getString(_userKey);
+    final userJson = _prefs!.getString(_userKey);
     if (userJson == null) return null;
 
     try {
@@ -82,12 +82,12 @@ class AuthService {
     }
   }
 
-  Future<bool> isAuthenticated() async {
-    final token = _prefs.getString(_tokenKey);
+  static Future<bool> isAuthenticated() async {
+    final token = _prefs!.getString(_tokenKey);
     return token != null;
   }
 
-  Future<void> refreshUser() async {
+  static Future<void> refreshUser() async {
     final currentUser = await getCurrentUser();
     if (currentUser != null) {
       final updatedUser = currentUser.copyWith(lastLoginAt: DateTime.now());
@@ -95,28 +95,12 @@ class AuthService {
     }
   }
 
-  Future<void> _saveUser(User user) async {
-    await _prefs.setString(_userKey, jsonEncode(user.toJson()));
+  static Future<void> _saveUser(User user) async {
+    await _prefs!.setString(_userKey, jsonEncode(user.toJson()));
   }
 
-  Future<void> _saveToken(String token) async {
-    await _prefs.setString(_tokenKey, token);
-  }
-
-  // Stream for real-time auth state changes
-  Stream<AuthState> get authStateStream async* {
-    yield AuthState.loading();
-
-    try {
-      final user = await getCurrentUser();
-      if (user != null) {
-        yield AuthState.authenticated(user);
-      } else {
-        yield AuthState.unauthenticated();
-      }
-    } catch (e) {
-      yield AuthState.error(e.toString(), DateTime.now());
-    }
+  static Future<void> _saveToken(String token) async {
+    await _prefs!.setString(_tokenKey, token);
   }
 }
 

@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_app/main.dart';
-import 'package:todo_app/providers/providers.dart';
 
 void main() {
   testWidgets('Riverpod Todo App smoke test', (WidgetTester tester) async {
@@ -20,7 +19,7 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [],
         child: const RiverpodTodoApp(),
       ),
     );

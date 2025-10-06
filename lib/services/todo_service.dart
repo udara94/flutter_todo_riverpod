@@ -3,26 +3,27 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import '../models/todo.dart';
+import '../entity/todo.dart';
 
 class TodoService {
   static const String _todosKey = 'todos_data';
+  static SharedPreferences? _prefs;
+  static final _uuid = const Uuid();
+  static final _todoController = StreamController<List<Todo>>.broadcast();
 
-  final SharedPreferences _prefs;
-  final _uuid = const Uuid();
-  final _todoController = StreamController<List<Todo>>.broadcast();
-
-  TodoService(this._prefs);
+  static void initialize(SharedPreferences prefs) {
+    _prefs = prefs;
+  }
 
   // Stream for real-time todo updates
-  Stream<List<Todo>> get todosStream => _todoController.stream;
+  static Stream<List<Todo>> get todosStream => _todoController.stream;
 
-  Future<List<Todo>> getTodos(String userId) async {
+  static Future<List<Todo>> getTodos(String userId) async {
     await Future.delayed(
       const Duration(milliseconds: 500),
     ); // Simulate network delay
 
-    final todosJson = _prefs.getString('${_todosKey}_$userId');
+    final todosJson = _prefs!.getString('${_todosKey}_$userId');
     if (todosJson == null) {
       // Create some mock todos for demo
       final mockTodos = _createMockTodos(userId);
@@ -38,7 +39,7 @@ class TodoService {
     }
   }
 
-  Future<Todo> createTodo({
+  static Future<Todo> createTodo({
     required String title,
     required String description,
     required TodoPriority priority,
@@ -62,7 +63,7 @@ class TodoService {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       dueDate: dueDate,
-      tags: tags,
+      tags: tags.join(','),
       userId: userId,
     );
 
@@ -74,7 +75,7 @@ class TodoService {
     return todo;
   }
 
-  Future<Todo> updateTodo(Todo todo) async {
+  static Future<Todo> updateTodo(Todo todo) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
     final updatedTodo = todo.copyWith(updatedAt: DateTime.now());
@@ -88,7 +89,7 @@ class TodoService {
     return updatedTodo;
   }
 
-  Future<void> deleteTodo(String todoId, String userId) async {
+  static Future<void> deleteTodo(String todoId, String userId) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
     final todos = await getTodos(userId);
@@ -106,9 +107,13 @@ class TodoService {
     return todos.where((todo) {
       return todo.title.toLowerCase().contains(query.toLowerCase()) ||
           todo.description.toLowerCase().contains(query.toLowerCase()) ||
-          todo.tags.any(
-                (tag) => tag.toLowerCase().contains(query.toLowerCase()),
-          );
+          (todo.tags
+                  ?.split(',')
+                  .any(
+                    (tag) =>
+                        tag.trim().toLowerCase().contains(query.toLowerCase()),
+                  ) ??
+              false);
     }).toList();
   }
 
@@ -118,9 +123,9 @@ class TodoService {
   }
 
   Future<List<Todo>> getTodosByPriority(
-      String userId,
-      TodoPriority priority,
-      ) async {
+    String userId,
+    TodoPriority priority,
+  ) async {
     final todos = await getTodos(userId);
     return todos.where((todo) => todo.priority == priority).toList();
   }
@@ -135,38 +140,38 @@ class TodoService {
     }).toList();
   }
 
-  Future<void> _saveTodos(String userId, List<Todo> todos) async {
+  static Future<void> _saveTodos(String userId, List<Todo> todos) async {
     final todosJson = jsonEncode(todos.map((todo) => todo.toJson()).toList());
-    await _prefs.setString('${_todosKey}_$userId', todosJson);
+    await _prefs!.setString('${_todosKey}_$userId', todosJson);
   }
 
-  List<Todo> _createMockTodos(String userId) {
+  static List<Todo> _createMockTodos(String userId) {
     final now = DateTime.now();
     return [
       Todo(
         id: _uuid.v4(),
         title: 'Complete Riverpod Article',
         description:
-        'Write comprehensive article about Flutter Riverpod state management with examples',
+            'Write comprehensive article about Flutter Riverpod state management with examples',
         priority: TodoPriority.high,
         status: TodoStatus.inProgress,
         createdAt: now.subtract(const Duration(days: 2)),
         updatedAt: now.subtract(const Duration(hours: 2)),
         dueDate: now.add(const Duration(days: 3)),
-        tags: ['work', 'flutter', 'article'],
+        tags: 'work,flutter,article',
         userId: userId,
       ),
       Todo(
         id: _uuid.v4(),
         title: 'Implement Authentication',
         description:
-        'Add login/logout functionality with proper state management',
+            'Add login/logout functionality with proper state management',
         priority: TodoPriority.high,
         status: TodoStatus.completed,
         createdAt: now.subtract(const Duration(days: 5)),
         updatedAt: now.subtract(const Duration(days: 1)),
         dueDate: now.subtract(const Duration(days: 1)),
-        tags: ['auth', 'flutter', 'riverpod'],
+        tags: 'auth,flutter,riverpod',
         userId: userId,
       ),
       Todo(
@@ -178,20 +183,20 @@ class TodoService {
         createdAt: now.subtract(const Duration(days: 1)),
         updatedAt: now.subtract(const Duration(days: 1)),
         dueDate: now.add(const Duration(days: 7)),
-        tags: ['ui', 'theme', 'accessibility'],
+        tags: 'ui,theme,accessibility',
         userId: userId,
       ),
       Todo(
         id: _uuid.v4(),
         title: 'Write Unit Tests',
         description:
-        'Add comprehensive test coverage for all providers and services',
+            'Add comprehensive test coverage for all providers and services',
         priority: TodoPriority.medium,
         status: TodoStatus.pending,
         createdAt: now.subtract(const Duration(hours: 12)),
         updatedAt: now.subtract(const Duration(hours: 12)),
         dueDate: now.add(const Duration(days: 5)),
-        tags: ['testing', 'quality'],
+        tags: 'testing,quality',
         userId: userId,
       ),
       Todo(
@@ -203,7 +208,7 @@ class TodoService {
         createdAt: now.subtract(const Duration(hours: 6)),
         updatedAt: now.subtract(const Duration(hours: 6)),
         dueDate: now.add(const Duration(days: 10)),
-        tags: ['performance', 'optimization'],
+        tags: 'performance,optimization',
         userId: userId,
       ),
     ];
