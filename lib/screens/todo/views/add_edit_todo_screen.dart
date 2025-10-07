@@ -7,11 +7,13 @@ import '../controllers/todo_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/enum/auth_state.dart';
 import '../../../utils/constants/app_dimensions.dart';
+import '../../../utils/constants/app_colors.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/router/app_router.dart';
 import '../../../utils/snackbar_util.dart';
 import '../../../widgets/common/app_text_input_field.dart';
 import '../../../widgets/common/app_button.dart';
+import '../../../widgets/common/selection_bottom_sheet.dart';
 
 class AddEditTodoScreen extends ConsumerStatefulWidget {
   final String? todoId;
@@ -87,21 +89,37 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          widget.todoId == null ? S.current.addNewTask : S.current.editTask,
-        ),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        actions: [
-          AppButton(
-            text: S.current.saveTask,
-            onPressed: _isLoading ? null : _saveTodo,
-            variant: AppButtonVariant.primary,
-            size: AppButtonSize.medium,
-            isLoading: _isLoading,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppColors.primaryGradient,
+            ),
           ),
-        ],
+          child: AppBar(
+            title: Text(
+              widget.todoId == null ? S.current.addNewTask : S.current.editTask,
+            ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            actions: [
+              // Padding(
+              //   padding: const EdgeInsets.only(right: 16.0),
+              //   child: AppButton(
+              //     text: S.current.saveTask,
+              //     onPressed: _isLoading ? null : _saveTodo,
+              //     variant: AppButtonVariant.primary,
+              //     size: AppButtonSize.medium,
+              //     isLoading: _isLoading,
+              //   ),
+              // ),
+            ],
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: AppDimensions.paddingAllL,
@@ -146,111 +164,127 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
 
               const SizedBox(height: AppDimensions.spacingL),
 
-              // Priority and Status Row
-              Row(
+              // Priority and Status Column
+              Column(
                 children: [
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: AppDimensions.paddingAllL,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              S.current.todoPriority,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: AppDimensions.fontSizeL,
-                              ),
+                  // Priority Card
+                  Card(
+                    child: Padding(
+                      padding: AppDimensions.paddingAllL,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            S.current.todoPriority,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppDimensions.fontSizeL,
                             ),
-                            const SizedBox(height: AppDimensions.spacingS),
-                            DropdownButtonFormField<TodoPriority>(
-                              value: _selectedPriority,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          InkWell(
+                            onTap: () async {
+                              final selectedPriority =
+                                  await SelectionBottomSheet.showPrioritySelection(
+                                    context,
+                                    currentPriority: _selectedPriority,
+                                  );
+                              if (selectedPriority != null) {
+                                setState(() {
+                                  _selectedPriority = selectedPriority;
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 16,
                               ),
-                              items: TodoPriority.values.map((priority) {
-                                return DropdownMenuItem(
-                                  value: priority,
-                                  child: Row(
-                                    children: [
-                                      _getPriorityIcon(priority),
-                                      const SizedBox(width: 8),
-                                      Text(_getPriorityText(priority)),
-                                    ],
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(0.3),
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  _getPriorityIcon(_selectedPriority),
+                                  const SizedBox(width: 8),
+                                  Text(_getPriorityText(_selectedPriority)),
+                                  const Spacer(),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.grey[600],
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    _selectedPriority = value;
-                                  });
-                                }
-                              },
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  const SizedBox(height: AppDimensions.spacingL),
 
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: AppDimensions.paddingAllL,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              S.current.todoStatus,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: AppDimensions.fontSizeL,
-                              ),
+                  // Status Card
+                  Card(
+                    child: Padding(
+                      padding: AppDimensions.paddingAllL,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            S.current.todoStatus,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppDimensions.fontSizeL,
                             ),
-                            const SizedBox(height: AppDimensions.spacingS),
-                            DropdownButtonFormField<TodoStatus>(
-                              value: _selectedStatus,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          InkWell(
+                            onTap: () async {
+                              final selectedStatus =
+                                  await SelectionBottomSheet.showStatusSelection(
+                                    context,
+                                    currentStatus: _selectedStatus,
+                                  );
+                              if (selectedStatus != null) {
+                                setState(() {
+                                  _selectedStatus = selectedStatus;
+                                });
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 16,
                               ),
-                              items: TodoStatus.values.map((status) {
-                                return DropdownMenuItem(
-                                  value: status,
-                                  child: Row(
-                                    children: [
-                                      _getStatusIcon(status),
-                                      const SizedBox(width: 8),
-                                      Text(_getStatusText(status)),
-                                    ],
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(0.3),
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  _getStatusIcon(_selectedStatus),
+                                  const SizedBox(width: 8),
+                                  Text(_getStatusText(_selectedStatus)),
+                                  const Spacer(),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.grey[600],
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    _selectedStatus = value;
-                                  });
-                                }
-                              },
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

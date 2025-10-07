@@ -5,6 +5,7 @@ import '../../utils/constants/app_colors.dart';
 import '../../utils/constants/app_dimensions.dart';
 import '../auth/controllers/auth_controller.dart';
 import '../auth/enum/auth_state.dart';
+import '../auth/state/auth_state.dart';
 import '../../utils/router/app_router.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -58,19 +59,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 300));
     await _fadeController.forward();
 
-    // Wait a bit then navigate
+    // Wait a bit then check auth state
     await Future.delayed(const Duration(milliseconds: 1000));
-    _navigateToNextScreen();
+    _checkAuthAndNavigate();
   }
 
-  void _navigateToNextScreen() {
+  void _checkAuthAndNavigate() {
     if (mounted) {
+      // Check current state and navigate
       final authState = ref.read(authControllerProvider);
       if (authState?.status == AuthStatus.authenticated) {
         AppRouter.goToHome(context);
-      } else {
+      } else if (authState?.status == AuthStatus.unauthenticated) {
         AppRouter.goToLogin(context);
       }
+      // If status is still initial, the build method will handle navigation
+      // when the auth state changes
     }
   }
 
@@ -83,6 +87,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes
+    ref.listen<AuthState?>(authControllerProvider, (previous, next) {
+      if (next != null && mounted) {
+        if (next.status == AuthStatus.authenticated) {
+          AppRouter.goToHome(context);
+        } else if (next.status == AuthStatus.unauthenticated) {
+          AppRouter.goToLogin(context);
+        }
+      }
+    });
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

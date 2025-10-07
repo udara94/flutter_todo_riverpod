@@ -11,7 +11,26 @@ part 'auth_controller.g.dart';
 class AuthController extends _$AuthController {
   @override
   AuthState? build() {
+    _checkExistingAuth();
     return AuthState(status: AuthStatus.initial);
+  }
+
+  Future<void> _checkExistingAuth() async {
+    try {
+      final isAuthenticated = await AuthService.isAuthenticated();
+      if (isAuthenticated) {
+        final user = await AuthService.getCurrentUser();
+        if (user != null) {
+          state = AuthState(status: AuthStatus.authenticated, user: user);
+        } else {
+          state = AuthState(status: AuthStatus.unauthenticated);
+        }
+      } else {
+        state = AuthState(status: AuthStatus.unauthenticated);
+      }
+    } catch (e) {
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
   }
 
   Future<User> login(String email, String password) async {

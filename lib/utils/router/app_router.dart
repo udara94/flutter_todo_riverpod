@@ -31,6 +31,7 @@ class AppRouter {
       initialLocation: splash,
       routes: _buildRoutes(),
       redirect: _handleRedirect,
+      refreshListenable: _AuthNotifier(),
     );
   }
 
@@ -75,8 +76,13 @@ class AppRouter {
 
   /// Handle route redirection based on authentication state
   static String? _handleRedirect(BuildContext context, GoRouterState state) {
-    // This would be handled by the auth state provider
-    // For now, we'll let individual screens handle auth checks
+    // Allow splash screen to always be accessible
+    if (state.uri.path == splash) {
+      return null;
+    }
+
+    // For now, let individual screens handle auth checks
+    // The splash screen will handle the initial navigation
     return null;
   }
 
@@ -138,3 +144,11 @@ class AppRouter {
 final routerProvider = Provider<GoRouter>((ref) {
   return AppRouter.getRouter();
 });
+
+/// Auth notifier for router refresh
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier() {
+    // This is a simple notifier for now
+    // In a more complex app, you might want to listen to auth state changes
+  }
+}
