@@ -157,7 +157,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 controller: _emailController,
                                 labelText: S.current.emailLabel,
                                 isRequired: true,
-                                requiredErrorMessage: 'Please enter your email',
+                                requiredErrorMessage:
+                                    S.current.emailRequiredError,
                               ),
                               const SizedBox(height: AppDimensions.spacingL),
 
@@ -167,13 +168,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 labelText: S.current.passwordLabel,
                                 isRequired: true,
                                 requiredErrorMessage:
-                                    'Please enter your password',
+                                    S.current.passwordRequiredError,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
+                                    return S.current.passwordRequiredError;
                                   }
                                   if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
+                                    return S.current.passwordLengthError;
                                   }
                                   return null;
                                 },
@@ -243,8 +244,8 @@ class LogoutButton extends ConsumerWidget {
               final shouldLogout = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
+                  title: Text(S.current.logoutTitle),
+                  content: Text(S.current.logoutMessage),
                   actions: [
                     AppButton(
                       text: S.current.cancel,
@@ -266,7 +267,10 @@ class LogoutButton extends ConsumerWidget {
                 await ref.read(authControllerProvider.notifier).logout();
                 if (context.mounted) {
                   AppRouter.goToLogin(context);
-                  SnackBarUtil.showSuccess(context, 'Logged out successfully');
+                  SnackBarUtil.showSuccess(
+                    context,
+                    S.current.loggedOutSuccessfully,
+                  );
                 }
               }
             },
@@ -277,7 +281,7 @@ class LogoutButton extends ConsumerWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.logout),
-      tooltip: 'Logout',
+      tooltip: S.current.logoutTooltip,
     );
   }
 }

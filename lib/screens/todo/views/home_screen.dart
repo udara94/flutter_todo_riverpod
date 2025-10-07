@@ -15,7 +15,6 @@ import '../../../utils/router/app_router.dart';
 import '../../../utils/snackbar_util.dart';
 import '../../../widgets/common/app_text_input_field.dart';
 import '../../../widgets/common/app_button.dart';
-import '../../../widgets/common/selection_bottom_sheet.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +26,21 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchController = TextEditingController();
   bool _isSearchExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load todos when the screen is first displayed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = ref.read(authControllerProvider);
+      if (authState?.status == AuthStatus.authenticated &&
+          authState?.user != null) {
+        ref
+            .read(todoControllerProvider.notifier)
+            .loadTodos(authState!.user!.id);
+      }
+    });
+  }
 
   @override
   void dispose() {

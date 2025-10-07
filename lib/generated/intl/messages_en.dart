@@ -20,9 +20,15 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(version) => "Version ${version}";
+  static String m0(days) => "${days} days ago";
 
-  static String m1(name) => "Welcome back, ${name}!";
+  static String m1(hours) => "${hours} hours ago";
+
+  static String m2(minutes) => "${minutes} minutes ago";
+
+  static String m3(version) => "Version ${version}";
+
+  static String m4(name) => "Welcome back, ${name}!";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -38,6 +44,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "completionRate": MessageLookupByLibrary.simpleMessage("Completion Rate"),
     "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
     "days": MessageLookupByLibrary.simpleMessage("days"),
+    "daysAgo": m0,
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
     "deleteTask": MessageLookupByLibrary.simpleMessage("Delete Task"),
     "deleteTaskConfirm": MessageLookupByLibrary.simpleMessage(
@@ -52,7 +59,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "editTask": MessageLookupByLibrary.simpleMessage("Edit Task"),
     "emailHint": MessageLookupByLibrary.simpleMessage("Enter your email"),
     "emailLabel": MessageLookupByLibrary.simpleMessage("Email"),
+    "emailRequiredError": MessageLookupByLibrary.simpleMessage(
+      "Please enter your email",
+    ),
     "error": MessageLookupByLibrary.simpleMessage("Error"),
+    "errorLoadingStatistics": MessageLookupByLibrary.simpleMessage(
+      "Error loading statistics",
+    ),
     "filterAll": MessageLookupByLibrary.simpleMessage("All"),
     "filterCompleted": MessageLookupByLibrary.simpleMessage("Completed"),
     "filterInProgress": MessageLookupByLibrary.simpleMessage("In Progress"),
@@ -60,11 +73,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "filterPending": MessageLookupByLibrary.simpleMessage("Pending"),
     "homeTitle": MessageLookupByLibrary.simpleMessage("My Tasks"),
     "hours": MessageLookupByLibrary.simpleMessage("hours"),
+    "hoursAgo": m1,
     "inProgressTasks": MessageLookupByLibrary.simpleMessage(
       "In Progress Tasks",
     ),
+    "justNow": MessageLookupByLibrary.simpleMessage("Just now"),
     "lightMode": MessageLookupByLibrary.simpleMessage("Light Mode"),
     "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+    "loggedOutSuccessfully": MessageLookupByLibrary.simpleMessage(
+      "Logged out successfully",
+    ),
     "loginButton": MessageLookupByLibrary.simpleMessage("Login"),
     "loginFailed": MessageLookupByLibrary.simpleMessage("Login failed"),
     "loginSubtitle": MessageLookupByLibrary.simpleMessage(
@@ -75,12 +93,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "logoutConfirm": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to logout?",
     ),
+    "logoutMessage": MessageLookupByLibrary.simpleMessage(
+      "Are you sure you want to logout?",
+    ),
+    "logoutTitle": MessageLookupByLibrary.simpleMessage("Logout"),
+    "logoutTooltip": MessageLookupByLibrary.simpleMessage("Logout"),
     "markComplete": MessageLookupByLibrary.simpleMessage("Mark Complete"),
     "markIncomplete": MessageLookupByLibrary.simpleMessage("Mark Incomplete"),
     "minutes": MessageLookupByLibrary.simpleMessage("minutes"),
+    "minutesAgo": m2,
     "nextMonth": MessageLookupByLibrary.simpleMessage("Next Month"),
     "nextWeek": MessageLookupByLibrary.simpleMessage("Next Week"),
     "no": MessageLookupByLibrary.simpleMessage("No"),
+    "noRecentActivity": MessageLookupByLibrary.simpleMessage(
+      "No recent activity",
+    ),
     "noStatsAvailable": MessageLookupByLibrary.simpleMessage(
       "No statistics available",
     ),
@@ -88,13 +115,31 @@ class MessageLookup extends MessageLookupByLibrary {
     "noTasksMessage": MessageLookupByLibrary.simpleMessage(
       "Start by adding a new task!",
     ),
+    "overdueRate": MessageLookupByLibrary.simpleMessage("Overdue Rate"),
     "overdueTasks": MessageLookupByLibrary.simpleMessage("Overdue Tasks"),
+    "overview": MessageLookupByLibrary.simpleMessage("Overview"),
     "passwordHint": MessageLookupByLibrary.simpleMessage("Enter your password"),
     "passwordLabel": MessageLookupByLibrary.simpleMessage("Password"),
+    "passwordLengthError": MessageLookupByLibrary.simpleMessage(
+      "Password must be at least 6 characters",
+    ),
+    "passwordRequiredError": MessageLookupByLibrary.simpleMessage(
+      "Please enter your password",
+    ),
     "pendingTasks": MessageLookupByLibrary.simpleMessage("Pending Tasks"),
+    "performanceMetrics": MessageLookupByLibrary.simpleMessage(
+      "Performance Metrics",
+    ),
+    "pleaseLoginToViewStats": MessageLookupByLibrary.simpleMessage(
+      "Please login to view stats",
+    ),
+    "priorityDistribution": MessageLookupByLibrary.simpleMessage(
+      "Priority Distribution",
+    ),
     "priorityHigh": MessageLookupByLibrary.simpleMessage("High"),
     "priorityLow": MessageLookupByLibrary.simpleMessage("Low"),
     "priorityMedium": MessageLookupByLibrary.simpleMessage("Medium"),
+    "recentActivity": MessageLookupByLibrary.simpleMessage("Recent Activity"),
     "recentlyCompleted": MessageLookupByLibrary.simpleMessage(
       "Recently Completed",
     ),
@@ -127,6 +172,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "statTotal": MessageLookupByLibrary.simpleMessage("Total"),
     "statsTitle": MessageLookupByLibrary.simpleMessage("Task Statistics"),
     "statusCompleted": MessageLookupByLibrary.simpleMessage("Completed"),
+    "statusDistribution": MessageLookupByLibrary.simpleMessage(
+      "Status Distribution",
+    ),
     "statusInProgress": MessageLookupByLibrary.simpleMessage("In Progress"),
     "statusPending": MessageLookupByLibrary.simpleMessage("Pending"),
     "success": MessageLookupByLibrary.simpleMessage("Success"),
@@ -151,14 +199,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "todoTitle": MessageLookupByLibrary.simpleMessage("Title"),
     "tomorrow": MessageLookupByLibrary.simpleMessage("Tomorrow"),
     "totalTasks": MessageLookupByLibrary.simpleMessage("Total Tasks"),
+    "totalTodos": MessageLookupByLibrary.simpleMessage("Total Todos"),
     "upcomingDeadlines": MessageLookupByLibrary.simpleMessage(
       "Upcoming Deadlines",
     ),
     "useDemoCredentials": MessageLookupByLibrary.simpleMessage(
       "Use Demo Credentials",
     ),
-    "version": m0,
-    "welcomeBack": m1,
+    "version": m3,
+    "welcomeBack": m4,
     "yes": MessageLookupByLibrary.simpleMessage("Yes"),
     "yesterday": MessageLookupByLibrary.simpleMessage("Yesterday"),
   };

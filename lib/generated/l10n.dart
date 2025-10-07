@@ -749,6 +749,191 @@ class S {
       args: [],
     );
   }
+
+  /// `Please login to view stats`
+  String get pleaseLoginToViewStats {
+    return Intl.message(
+      'Please login to view stats',
+      name: 'pleaseLoginToViewStats',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error loading statistics`
+  String get errorLoadingStatistics {
+    return Intl.message(
+      'Error loading statistics',
+      name: 'errorLoadingStatistics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overview`
+  String get overview {
+    return Intl.message('Overview', name: 'overview', desc: '', args: []);
+  }
+
+  /// `Total Todos`
+  String get totalTodos {
+    return Intl.message('Total Todos', name: 'totalTodos', desc: '', args: []);
+  }
+
+  /// `Priority Distribution`
+  String get priorityDistribution {
+    return Intl.message(
+      'Priority Distribution',
+      name: 'priorityDistribution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status Distribution`
+  String get statusDistribution {
+    return Intl.message(
+      'Status Distribution',
+      name: 'statusDistribution',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recent Activity`
+  String get recentActivity {
+    return Intl.message(
+      'Recent Activity',
+      name: 'recentActivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No recent activity`
+  String get noRecentActivity {
+    return Intl.message(
+      'No recent activity',
+      name: 'noRecentActivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Performance Metrics`
+  String get performanceMetrics {
+    return Intl.message(
+      'Performance Metrics',
+      name: 'performanceMetrics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overdue Rate`
+  String get overdueRate {
+    return Intl.message(
+      'Overdue Rate',
+      name: 'overdueRate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Just now`
+  String get justNow {
+    return Intl.message('Just now', name: 'justNow', desc: '', args: []);
+  }
+
+  /// `{days} days ago`
+  String daysAgo(Object days) {
+    return Intl.message(
+      '$days days ago',
+      name: 'daysAgo',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `{hours} hours ago`
+  String hoursAgo(Object hours) {
+    return Intl.message(
+      '$hours hours ago',
+      name: 'hoursAgo',
+      desc: '',
+      args: [hours],
+    );
+  }
+
+  /// `{minutes} minutes ago`
+  String minutesAgo(Object minutes) {
+    return Intl.message(
+      '$minutes minutes ago',
+      name: 'minutesAgo',
+      desc: '',
+      args: [minutes],
+    );
+  }
+
+  /// `Please enter your email`
+  String get emailRequiredError {
+    return Intl.message(
+      'Please enter your email',
+      name: 'emailRequiredError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your password`
+  String get passwordRequiredError {
+    return Intl.message(
+      'Please enter your password',
+      name: 'passwordRequiredError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be at least 6 characters`
+  String get passwordLengthError {
+    return Intl.message(
+      'Password must be at least 6 characters',
+      name: 'passwordLengthError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout`
+  String get logoutTitle {
+    return Intl.message('Logout', name: 'logoutTitle', desc: '', args: []);
+  }
+
+  /// `Are you sure you want to logout?`
+  String get logoutMessage {
+    return Intl.message(
+      'Are you sure you want to logout?',
+      name: 'logoutMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logged out successfully`
+  String get loggedOutSuccessfully {
+    return Intl.message(
+      'Logged out successfully',
+      name: 'loggedOutSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout`
+  String get logoutTooltip {
+    return Intl.message('Logout', name: 'logoutTooltip', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

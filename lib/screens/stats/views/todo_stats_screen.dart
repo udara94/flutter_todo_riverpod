@@ -7,6 +7,7 @@ import '../state/stats_state.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../todo/controllers/todo_controller.dart';
 import '../../../utils/constants/app_dimensions.dart';
+import '../../../utils/constants/app_colors.dart';
 import '../../../generated/l10n.dart';
 
 class TodoStatsScreen extends ConsumerWidget {
@@ -19,19 +20,32 @@ class TodoStatsScreen extends ConsumerWidget {
     final todoState = ref.watch(todoControllerProvider);
 
     if (authState?.status != AuthStatus.authenticated) {
-      return const Scaffold(
-        body: Center(child: Text('Please login to view stats')),
+      return Scaffold(
+        body: Center(child: Text(S.current.pleaseLoginToViewStats)),
       );
     }
 
     final userId = authState!.user!.id;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(S.current.statsTitle),
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundLight,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppColors.primaryGradient,
+            ),
+          ),
+          child: AppBar(
+            title: Text(S.current.statsTitle),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+        ),
       ),
       body: statsState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -43,11 +57,11 @@ class TodoStatsScreen extends ConsumerWidget {
                   Icon(
                     Icons.error_outline,
                     size: AppDimensions.iconXXL,
-                    color: Colors.red[400],
+                    color: AppColors.error,
                   ),
                   const SizedBox(height: AppDimensions.spacingL),
                   Text(
-                    'Error loading statistics',
+                    S.current.errorLoadingStatistics,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: AppDimensions.spacingL),
@@ -63,7 +77,7 @@ class TodoStatsScreen extends ConsumerWidget {
                           .read(statsControllerProvider.notifier)
                           .loadStats(userId);
                     },
-                    child: const Text('Retry'),
+                    child: Text(S.current.retry),
                   ),
                 ],
               ),
@@ -107,12 +121,12 @@ class TodoStatsScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Overview',
-          style: TextStyle(
+        Text(
+          S.current.overview,
+          style: const TextStyle(
             fontSize: AppDimensions.fontSizeXXL,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingL),
@@ -120,33 +134,33 @@ class TodoStatsScreen extends ConsumerWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.5,
+          crossAxisSpacing: AppDimensions.spacingL,
+          mainAxisSpacing: AppDimensions.spacingL,
+          childAspectRatio: 1,
           children: [
             _buildStatCard(
-              'Total Todos',
+              S.current.totalTodos,
               stats.total.toString(),
               Icons.list_alt,
-              Colors.blue,
+              AppColors.info,
             ),
             _buildStatCard(
               S.current.statCompleted,
               stats.completed.toString(),
               Icons.check_circle,
-              Colors.green,
+              AppColors.todoCompleted,
             ),
             _buildStatCard(
               S.current.statInProgress,
               stats.inProgress.toString(),
               Icons.play_circle,
-              Colors.orange,
+              AppColors.todoInProgress,
             ),
             _buildStatCard(
               S.current.statOverdue,
               stats.overdue.toString(),
               Icons.warning,
-              Colors.red,
+              AppColors.todoOverdue,
             ),
           ],
         ),
@@ -161,14 +175,14 @@ class TodoStatsScreen extends ConsumerWidget {
     Color color,
   ) {
     return Card(
-      color: Colors.white,
+      color: AppColors.surfaceLight,
       child: Padding(
-        padding: AppDimensions.paddingAllL,
+        padding: AppDimensions.paddingAllXL,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: AppDimensions.iconXL),
+            SizedBox(height: AppDimensions.spacingM),
             Text(
               value,
               style: TextStyle(
@@ -176,12 +190,15 @@ class TodoStatsScreen extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
+              textAlign: TextAlign.center,
             ),
+            SizedBox(height: AppDimensions.spacingS),
             Text(
               title,
               style: const TextStyle(
-                fontSize: AppDimensions.fontSizeS,
-                color: Colors.grey,
+                fontSize: AppDimensions.fontSizeM,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
@@ -200,27 +217,27 @@ class TodoStatsScreen extends ConsumerWidget {
     }
 
     return Card(
-      color: Colors.white,
+      color: AppColors.surfaceLight,
       child: Padding(
         padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Priority Distribution',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeXL,
+            Text(
+              S.current.priorityDistribution,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            SizedBox(height: AppDimensions.spacingL),
             ...priorityCounts.entries.map((entry) {
               final percentage = todos.isEmpty
                   ? 0.0
                   : (entry.value / todos.length) * 100;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: AppDimensions.spacingM),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -231,7 +248,7 @@ class TodoStatsScreen extends ConsumerWidget {
                           entry.key.name.toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -240,10 +257,10 @@ class TodoStatsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppDimensions.spacingXS),
                     LinearProgressIndicator(
                       value: percentage / 100,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: AppColors.grey200,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         _getPriorityColor(entry.key),
                       ),
@@ -265,18 +282,18 @@ class TodoStatsScreen extends ConsumerWidget {
     }
 
     return Card(
-      color: Colors.white,
+      color: AppColors.surfaceLight,
       child: Padding(
         padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Status Distribution',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeXL,
+            Text(
+              S.current.statusDistribution,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -285,7 +302,7 @@ class TodoStatsScreen extends ConsumerWidget {
                   ? 0.0
                   : (entry.value / todos.length) * 100;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: AppDimensions.spacingM),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -296,7 +313,7 @@ class TodoStatsScreen extends ConsumerWidget {
                           entry.key.name.toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -305,10 +322,10 @@ class TodoStatsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppDimensions.spacingXS),
                     LinearProgressIndicator(
                       value: percentage / 100,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: AppColors.grey200,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         _getStatusColor(entry.key),
                       ),
@@ -327,39 +344,39 @@ class TodoStatsScreen extends ConsumerWidget {
     final recentTodos = todos.take(5).toList();
 
     return Card(
-      color: Colors.white,
+      color: AppColors.surfaceLight,
       child: Padding(
         padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Recent Activity',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeXL,
+            Text(
+              S.current.recentActivity,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
             if (recentTodos.isEmpty)
-              const Text(
-                'No recent activity',
-                style: TextStyle(color: Colors.grey),
+              Text(
+                S.current.noRecentActivity,
+                style: const TextStyle(color: Colors.grey),
               )
             else
               ...recentTodos
                   .map(
                     (todo) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: AppDimensions.spacingS),
                       child: Row(
                         children: [
                           Icon(
                             _getStatusIcon(todo.status),
                             color: _getStatusColor(todo.status),
-                            size: 16,
+                            size: AppDimensions.iconS,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: AppDimensions.spacingS),
                           Expanded(
                             child: Text(
                               todo.title,
@@ -371,7 +388,7 @@ class TodoStatsScreen extends ConsumerWidget {
                             _formatDate(todo.createdAt),
                             style: const TextStyle(
                               fontSize: AppDimensions.fontSizeS,
-                              color: Colors.grey,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -407,18 +424,18 @@ class TodoStatsScreen extends ConsumerWidget {
         : (overdueTodos / todos.length) * 100;
 
     return Card(
-      color: Colors.white,
+      color: AppColors.surfaceLight,
       child: Padding(
         padding: AppDimensions.paddingAllL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Performance Metrics',
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeXL,
+            Text(
+              S.current.performanceMetrics,
+              style: const TextStyle(
+                fontSize: AppDimensions.fontSizeL,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -426,19 +443,19 @@ class TodoStatsScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: _buildMetricItem(
-                    'Completion Rate',
+                    S.current.completionRate,
                     '${completionRate.toStringAsFixed(1)}%',
                     Icons.trending_up,
-                    completionRate > 70 ? Colors.green : Colors.orange,
+                    completionRate > 70 ? AppColors.success : AppColors.warning,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: _buildMetricItem(
-                    'Overdue Rate',
+                    S.current.overdueRate,
                     '${overdueRate.toStringAsFixed(1)}%',
                     Icons.trending_down,
-                    overdueRate < 20 ? Colors.green : Colors.red,
+                    overdueRate < 20 ? AppColors.success : AppColors.error,
                   ),
                 ),
               ],
@@ -456,16 +473,16 @@ class TodoStatsScreen extends ConsumerWidget {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppDimensions.paddingAllL,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: AppColors.withOpacity(color, 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        border: Border.all(color: AppColors.withOpacity(color, 0.3)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: AppDimensions.iconL),
+          SizedBox(height: AppDimensions.spacingS),
           Text(
             value,
             style: TextStyle(
@@ -490,22 +507,22 @@ class TodoStatsScreen extends ConsumerWidget {
   Color _getPriorityColor(TodoPriority priority) {
     switch (priority) {
       case TodoPriority.high:
-        return Colors.red;
+        return AppColors.priorityHigh;
       case TodoPriority.medium:
-        return Colors.orange;
+        return AppColors.priorityMedium;
       case TodoPriority.low:
-        return Colors.green;
+        return AppColors.priorityLow;
     }
   }
 
   Color _getStatusColor(TodoStatus status) {
     switch (status) {
       case TodoStatus.pending:
-        return Colors.grey;
+        return AppColors.todoPending;
       case TodoStatus.inProgress:
-        return Colors.blue;
+        return AppColors.todoInProgress;
       case TodoStatus.completed:
-        return Colors.green;
+        return AppColors.todoCompleted;
     }
   }
 
@@ -525,13 +542,13 @@ class TodoStatsScreen extends ConsumerWidget {
     final difference = now.difference(date);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
+      return '${difference.inDays} ${S.current.days} ${S.current.ago}';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
+      return '${difference.inHours} ${S.current.hours} ${S.current.ago}';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
+      return '${difference.inMinutes} ${S.current.minutes} ${S.current.ago}';
     } else {
-      return 'Just now';
+      return S.current.justNow;
     }
   }
 }

@@ -88,7 +88,7 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.backgroundLight,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Container(
@@ -195,28 +195,30 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                                 });
                               }
                             },
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusS,
+                            ),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 16,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppDimensions.spacingM,
+                                vertical: AppDimensions.spacingL,
                               ),
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.grey.withOpacity(0.3),
+                                border: Border.all(color: AppColors.grey300),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusS,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
                                   _getPriorityIcon(_selectedPriority),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: AppDimensions.spacingS),
                                   Text(_getPriorityText(_selectedPriority)),
                                   const Spacer(),
                                   Icon(
                                     Icons.keyboard_arrow_down,
-                                    color: Colors.grey[600],
+                                    color: AppColors.grey600,
                                   ),
                                 ],
                               ),
@@ -257,28 +259,30 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                                 });
                               }
                             },
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusS,
+                            ),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 16,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppDimensions.spacingM,
+                                vertical: AppDimensions.spacingL,
                               ),
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.grey.withOpacity(0.3),
+                                border: Border.all(color: AppColors.grey300),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusS,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
                                   _getStatusIcon(_selectedStatus),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: AppDimensions.spacingS),
                                   Text(_getStatusText(_selectedStatus)),
                                   const Spacer(),
                                   Icon(
                                     Icons.keyboard_arrow_down,
-                                    color: Colors.grey[600],
+                                    color: AppColors.grey600,
                                   ),
                                 ],
                               ),
@@ -307,19 +311,21 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                           fontSize: AppDimensions.fontSizeL,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: AppDimensions.spacingS),
                       InkWell(
                         onTap: _selectDueDate,
                         child: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: AppDimensions.paddingAllM,
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.grey300),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusS,
+                            ),
                           ),
                           child: Row(
                             children: [
                               const Icon(Icons.calendar_today),
-                              const SizedBox(width: 8),
+                              SizedBox(width: AppDimensions.spacingS),
                               Text(
                                 _selectedDueDate != null
                                     ? DateFormat(
@@ -329,7 +335,7 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                                 style: TextStyle(
                                   color: _selectedDueDate != null
                                       ? null
-                                      : Colors.grey[600],
+                                      : AppColors.grey600,
                                 ),
                               ),
                               const Spacer(),
@@ -367,7 +373,7 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                           fontSize: AppDimensions.fontSizeL,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: AppDimensions.spacingS),
                       AppTextInputField(
                         controller: _tagsController,
                         hintText: S.current.tagsHint,
@@ -375,18 +381,21 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                         suffixIcon: Icons.add,
                         onSuffixIconPressed: _addTags,
                         onSubmitted: (_) => _addTags(),
-                        borderRadius: 8.0,
+                        borderRadius: AppDimensions.radiusS,
                       ),
                       if (_tags.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppDimensions.spacingS),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
+                          spacing: AppDimensions.spacingS,
+                          runSpacing: AppDimensions.spacingXS,
                           children: _tags
                               .map(
                                 (tag) => Chip(
                                   label: Text(tag),
-                                  deleteIcon: const Icon(Icons.close, size: 16),
+                                  deleteIcon: Icon(
+                                    Icons.close,
+                                    size: AppDimensions.iconS,
+                                  ),
                                   onDeleted: () {
                                     setState(() {
                                       _tags.remove(tag);
@@ -403,7 +412,7 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: AppDimensions.spacingXXXL),
 
               // Save Button
               AppButton(
@@ -430,19 +439,19 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
     switch (priority) {
       case TodoPriority.high:
         iconData = Icons.keyboard_arrow_up;
-        color = Colors.red;
+        color = AppColors.priorityHigh;
         break;
       case TodoPriority.medium:
         iconData = Icons.remove;
-        color = Colors.orange;
+        color = AppColors.priorityMedium;
         break;
       case TodoPriority.low:
         iconData = Icons.keyboard_arrow_down;
-        color = Colors.green;
+        color = AppColors.priorityLow;
         break;
     }
 
-    return Icon(iconData, color: color, size: 20);
+    return Icon(iconData, color: color, size: AppDimensions.iconM);
   }
 
   Widget _getStatusIcon(TodoStatus status) {
@@ -452,19 +461,19 @@ class _AddEditTodoScreenState extends ConsumerState<AddEditTodoScreen> {
     switch (status) {
       case TodoStatus.pending:
         iconData = Icons.schedule;
-        color = Colors.grey;
+        color = AppColors.todoPending;
         break;
       case TodoStatus.inProgress:
         iconData = Icons.play_circle;
-        color = Colors.blue;
+        color = AppColors.todoInProgress;
         break;
       case TodoStatus.completed:
         iconData = Icons.check_circle;
-        color = Colors.green;
+        color = AppColors.todoCompleted;
         break;
     }
 
-    return Icon(iconData, color: color, size: 20);
+    return Icon(iconData, color: color, size: AppDimensions.iconM);
   }
 
   Future<void> _selectDueDate() async {

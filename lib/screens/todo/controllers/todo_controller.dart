@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:todo_app/entity/todo.dart';
 import 'package:todo_app/services/todo_service.dart';
@@ -9,7 +10,14 @@ part 'todo_controller.g.dart';
 class TodoController extends _$TodoController {
   @override
   TodoState build() {
+    // Auto-load todos if not already loaded
+    _autoLoadTodos();
     return TodoState();
+  }
+
+  void _autoLoadTodos() {
+    // This will be called when the controller is first accessed
+    // We'll load todos when we have a valid user context
   }
 
   Future<void> loadTodos(String userId) async {
@@ -283,7 +291,7 @@ class TodoController extends _$TodoController {
             retryCount++;
             if (retryCount >= maxRetries) {
               // If all retries failed, log the error but continue with other todos
-              print(
+              debugPrint(
                 'Failed to create todo "${todoData['title']}" after $maxRetries retries: $e',
               );
             } else {

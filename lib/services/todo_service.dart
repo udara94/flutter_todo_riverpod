@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../entity/todo.dart';
@@ -24,8 +25,12 @@ class TodoService {
     ); // Simulate network delay
 
     final todosJson = _prefs!.getString('${_todosKey}_$userId');
+    debugPrint('TodoService.getTodos: Loading todos for user $userId');
+    debugPrint('TodoService.getTodos: Found data: ${todosJson != null}');
+
     if (todosJson == null) {
       // Create some mock todos for demo
+      debugPrint('TodoService.getTodos: No existing data, creating mock todos');
       final mockTodos = _createMockTodos(userId);
       await _saveTodos(userId, mockTodos);
       return mockTodos;
@@ -33,8 +38,13 @@ class TodoService {
 
     try {
       final List<dynamic> todosList = jsonDecode(todosJson);
-      return todosList.map((json) => Todo.fromJson(json)).toList();
+      final todos = todosList.map((json) => Todo.fromJson(json)).toList();
+      debugPrint(
+        'TodoService.getTodos: Loaded ${todos.length} todos from storage',
+      );
+      return todos;
     } catch (e) {
+      debugPrint('TodoService.getTodos: Error parsing todos: $e');
       return [];
     }
   }
@@ -47,7 +57,7 @@ class TodoService {
     DateTime? dueDate,
     List<String> tags = const [],
   }) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 100));
 
     // Simulate random failures
     if (Random().nextDouble() < 0.05) {
@@ -143,6 +153,9 @@ class TodoService {
   static Future<void> _saveTodos(String userId, List<Todo> todos) async {
     final todosJson = jsonEncode(todos.map((todo) => todo.toJson()).toList());
     await _prefs!.setString('${_todosKey}_$userId', todosJson);
+    debugPrint(
+      'TodoService._saveTodos: Saved ${todos.length} todos for user $userId',
+    );
   }
 
   static List<Todo> _createMockTodos(String userId) {
